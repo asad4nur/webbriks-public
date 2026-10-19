@@ -42,7 +42,7 @@ export default function Projects() {
                 </span>
               </h2>
               <p className="mt-4 text-base leading-relaxed text-ink/60 sm:text-lg">
-                Websites, online stores and ad campaigns for brands across Bangladesh.
+                Websites, online stores and ad campaigns for brands in Bangladesh and around the world.
               </p>
             </div>
           }
