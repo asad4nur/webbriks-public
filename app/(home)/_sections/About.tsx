@@ -60,7 +60,7 @@ export default function About() {
             id="about-heading"
             className="mt-5 text-3xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl"
           >
-            We help Bangladeshi businesses{" "}
+            We help worldwide businesses{" "}
             <span className="bg-linear-to-r from-brand-violet to-brand-orchid bg-clip-text text-transparent">grow online</span>
           </h2>
 
