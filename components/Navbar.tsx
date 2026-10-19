@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   ArrowUpRight,
+  Boxes,
   BriefcaseBusiness,
   Camera,
   ChevronDown,
@@ -23,7 +24,7 @@ import { caseStudies } from "@/lib/case-studies";
 import { site } from "@/lib/site";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
 
@@ -36,6 +37,7 @@ const socialIcons: Record<(typeof site.socials)[number]["label"], IconType> = {
 // Root-relative ("/#…") so the links also work from inner pages like /services/….
 const navLinks = [
   { label: "Services", href: "/#services" },
+  { label: "Products", href: "#products" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Case Study", href: "#case-studies" },
   { label: "About", href: "/about" },
@@ -43,11 +45,64 @@ const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-// "Resources" dropdown. Add more pages here (case studies, blog…) as they go live.
-const resourceLinks: { icon: LucideIcon; title: string; description: string; href: string }[] = [
-  { icon: UsersRound, title: "Teams", description: "Meet the people behind Webbriks", href: "/teams" },
-  { icon: BriefcaseBusiness, title: "Careers", description: "Open positions and why join us", href: "/careers" },
-];
+type DropdownLink = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  href: string;
+  /** Opens in a new tab (our own products live on their own domains). */
+  external?: boolean;
+  badge?: string;
+  /** Short feature chips under the description. */
+  items?: string[];
+};
+
+// Small dropdowns in the bar, keyed by their navLinks href. Add pages or products here as they go live.
+const dropdowns = {
+  // Our own SaaS products.
+  "#products": [
+    {
+      icon: Boxes,
+      title: "Brikvent",
+      badge: "New",
+      description: "Inventory, POS, e-commerce and ERP in one system",
+      href: "https://www.brikvent.com/",
+      external: true,
+      items: ["Multi-outlet stock", "POS", "Courier automation", "Accounting"],
+    },
+  ],
+  "#resources": [
+    { icon: UsersRound, title: "Teams", description: "Meet the people behind Webbriks", href: "/teams" },
+    { icon: BriefcaseBusiness, title: "Careers", description: "Open positions and why join us", href: "/careers" },
+  ],
+} satisfies Record<string, DropdownLink[]>;
+
+type DropdownKey = keyof typeof dropdowns;
+const isDropdown = (href: string): href is DropdownKey => href in dropdowns;
+const dropdownId = (key: DropdownKey) => key.slice(1);
+
+/** Internal pages use next/link; products on their own domains open in a new tab. */
+function DropdownAnchor({
+  link,
+  className,
+  onClick,
+  children,
+}: {
+  link: DropdownLink;
+  className: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return link.external ? (
+    <a href={link.href} target="_blank" rel="noopener noreferrer" onClick={onClick} className={className}>
+      {children}
+    </a>
+  ) : (
+    <Link href={link.href} onClick={onClick} className={className}>
+      {children}
+    </Link>
+  );
+}
 
 type MenuService = { icon: LucideIcon; title: string; description: string; href: string; items: string[] };
 
@@ -121,14 +176,14 @@ export default function Navbar() {
   const casesMenu = menu === "cases";
   const [casesOpen, setCasesOpen] = useState(false); // phone accordion
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [resources, setResources] = useState(false); // desktop dropdown
-  const [resourcesOpen, setResourcesOpen] = useState(false); // phone accordion
+  const [dropdown, setDropdown] = useState<DropdownKey | null>(null); // desktop dropdown
+  const [mobileDropdown, setMobileDropdown] = useState<DropdownKey | null>(null); // phone accordion
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hover opens instantly; leaving waits a beat so the pointer can travel into the panel.
   const openMenu = (which: "services" | "cases") => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    setResources(false);
+    setDropdown(null);
     setMenu(which);
   };
   const closeMega = (delay = 150) => {
@@ -144,16 +199,16 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (!open && !menu && !resources) return;
+    if (!open && !menu && !dropdown) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       setOpen(false);
       setMenu(null);
-      setResources(false);
+      setDropdown(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, menu, resources]);
+  }, [open, menu, dropdown]);
 
   useEffect(() => {
     if (!open) return;
@@ -163,7 +218,7 @@ export default function Navbar() {
     return () => {
       root.style.overflow = previous;
       setServicesOpen(false);
-      setResourcesOpen(false);
+      setMobileDropdown(null);
       setCasesOpen(false);
     };
   }, [open]);
@@ -201,14 +256,14 @@ export default function Navbar() {
           />
         </Link>
 
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-1 lg:flex">
           {navLinks.map((link) =>
             link.href === "/#services" ? (
               <li key={link.href} onMouseEnter={() => openMenu("services")}>
                 {/* Tablets: plain link. Desktop: opens the mega menu. */}
                 <Link
                   href={link.href}
-                  className="rounded-full px-3 py-2 text-sm font-medium text-ink/65 transition-colors hover:bg-ink/[0.04] hover:text-ink lg:hidden"
+                  className="rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-ink/65 transition-colors hover:bg-ink/[0.04] hover:text-ink lg:hidden"
                 >
                   {link.label}
                 </Link>
@@ -217,7 +272,7 @@ export default function Navbar() {
                   aria-expanded={mega}
                   aria-controls="services-menu"
                   onClick={() => setMenu((m) => (m === "services" ? null : "services"))}
-                  className={`hidden items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-colors lg:inline-flex ${
+                  className={`hidden items-center gap-1 rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors lg:inline-flex xl:px-4 ${
                     mega ? "bg-tint-100 text-brand-violet" : "text-ink/65 hover:bg-ink/[0.04] hover:text-ink"
                   }`}
                 >
@@ -233,7 +288,7 @@ export default function Navbar() {
                 {/* Tablets: straight to the first case study. Desktop: opens the case study menu. */}
                 <Link
                   href={caseStudies[0].href}
-                  className="rounded-full px-3 py-2 text-sm font-medium text-ink/65 transition-colors hover:bg-ink/[0.04] hover:text-ink lg:hidden"
+                  className="rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-ink/65 transition-colors hover:bg-ink/[0.04] hover:text-ink lg:hidden"
                 >
                   {link.label}
                 </Link>
@@ -242,7 +297,7 @@ export default function Navbar() {
                   aria-expanded={casesMenu}
                   aria-controls="case-studies-menu"
                   onClick={() => setMenu((m) => (m === "cases" ? null : "cases"))}
-                  className={`hidden items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-colors lg:inline-flex ${
+                  className={`hidden items-center gap-1 rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors lg:inline-flex xl:px-4 ${
                     casesMenu ? "bg-tint-100 text-brand-violet" : "text-ink/65 hover:bg-ink/[0.04] hover:text-ink"
                   }`}
                 >
@@ -253,55 +308,79 @@ export default function Navbar() {
                   />
                 </button>
               </li>
-            ) : link.href === "#resources" ? (
+            ) : isDropdown(link.href) ? (
               <li
                 key={link.href}
                 className="relative"
                 onMouseEnter={() => {
                   closeMega(0);
-                  setResources(true);
+                  setDropdown(link.href as DropdownKey);
                 }}
-                onMouseLeave={() => setResources(false)}
+                onMouseLeave={() => setDropdown(null)}
               >
                 <button
                   type="button"
-                  aria-expanded={resources}
-                  aria-controls="resources-menu"
-                  onClick={() => setResources((v) => !v)}
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors lg:px-4 ${
-                    resources ? "bg-tint-100 text-brand-violet" : "text-ink/65 hover:bg-ink/[0.04] hover:text-ink"
+                  aria-expanded={dropdown === link.href}
+                  aria-controls={`${dropdownId(link.href)}-menu`}
+                  onClick={() => setDropdown((v) => (v === link.href ? null : (link.href as DropdownKey)))}
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors xl:px-4 ${
+                    dropdown === link.href
+                      ? "bg-tint-100 text-brand-violet"
+                      : "text-ink/65 hover:bg-ink/[0.04] hover:text-ink"
                   }`}
                 >
                   {link.label}
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-300 ${resources ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform duration-300 ${dropdown === link.href ? "rotate-180" : ""}`}
                     aria-hidden
                   />
                 </button>
                 {/* pt-3 is a hover bridge between the button and the panel */}
                 <div
-                  id="resources-menu"
-                  inert={!resources}
-                  className={`absolute top-full left-1/2 w-72 -translate-x-1/2 pt-3 transition duration-300 ${
-                    resources ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0"
+                  id={`${dropdownId(link.href)}-menu`}
+                  inert={dropdown !== link.href}
+                  className={`absolute top-full left-1/2 w-80 -translate-x-1/2 pt-3 transition duration-300 ${
+                    dropdown === link.href ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0"
                   }`}
                 >
                   <ul className="rounded-2xl border border-ink/[0.06] bg-white p-2 shadow-[0_24px_60px_-24px_rgba(43,5,146,0.45)]">
-                    {resourceLinks.map(({ icon: Icon, title, description, href }) => (
-                      <li key={href}>
-                        <Link
-                          href={href}
-                          onClick={() => setResources(false)}
-                          className="group flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-tint-50"
+                    {dropdowns[link.href].map((item: DropdownLink) => (
+                      <li key={item.href}>
+                        <DropdownAnchor
+                          link={item}
+                          onClick={() => setDropdown(null)}
+                          className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-tint-50"
                         >
                           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl rounded-br-md bg-tint-100 text-brand-violet transition duration-300 group-hover:bg-linear-to-br group-hover:from-brand-orchid group-hover:to-brand-violet group-hover:text-white">
-                            <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+                            <item.icon className="h-5 w-5" strokeWidth={1.8} aria-hidden />
                           </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-ink">{title}</span>
-                            <span className="block text-xs text-ink/50">{description}</span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                              {item.title}
+                              {item.badge && (
+                                <span className="rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-2 py-0.5 text-[10px] font-semibold text-white">
+                                  {item.badge}
+                                </span>
+                              )}
+                              {item.external && (
+                                <ArrowUpRight className="h-3.5 w-3.5 text-ink/35 transition-colors group-hover:text-brand-violet" aria-hidden />
+                              )}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-ink/50">{item.description}</span>
+                            {item.items && (
+                              <span className="mt-2.5 flex flex-wrap gap-1">
+                                {item.items.map((chip) => (
+                                  <span
+                                    key={chip}
+                                    className="rounded-md bg-paper px-2 py-0.5 text-[11px] font-medium text-ink/60 transition-colors group-hover:bg-white"
+                                  >
+                                    {chip}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
                           </span>
-                        </Link>
+                        </DropdownAnchor>
                       </li>
                     ))}
                   </ul>
@@ -311,7 +390,7 @@ export default function Navbar() {
               <li key={link.href} onMouseEnter={() => closeMega(0)}>
                 <Link
                   href={link.href}
-                  className="rounded-full px-3 py-2 text-sm font-medium text-ink/65 lg:px-4 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+                  className="rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-ink/65 transition-colors hover:bg-ink/[0.04] hover:text-ink xl:px-4"
                 >
                   {link.label}
                 </Link>
@@ -322,7 +401,7 @@ export default function Navbar() {
 
         <Link
           href="/contact"
-          className="group hidden items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-[0_8px_24px_-10px_rgba(83,20,214,0.6)] transition hover:brightness-110 md:inline-flex"
+          className="group hidden items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-[0_8px_24px_-10px_rgba(83,20,214,0.6)] transition hover:brightness-110 md:mr-3 md:ml-auto md:inline-flex lg:mx-0"
         >
           Book a Call
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -334,7 +413,7 @@ export default function Navbar() {
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ink/10 bg-white text-ink md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ink/10 bg-white text-ink lg:hidden"
         >
           {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
         </button>
@@ -560,7 +639,7 @@ export default function Navbar() {
       {open && (
         <div
           id="mobile-menu"
-          className="fixed inset-0 -z-10 flex animate-fade-up flex-col bg-white pt-[5.5rem] [animation-duration:0.45s] motion-reduce:animate-none md:hidden"
+          className="fixed inset-0 -z-10 flex animate-fade-up flex-col bg-white pt-[5.5rem] [animation-duration:0.45s] motion-reduce:animate-none lg:hidden"
         >
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
             <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-tint-100 blur-3xl" />
@@ -735,26 +814,28 @@ export default function Navbar() {
                       </div>
                     </div>
                   </li>
-                ) : link.href === "#resources" ? (
+                ) : isDropdown(link.href) ? (
                   <li key={link.href} className="border-b border-ink/[0.06]">
                     <button
                       type="button"
-                      aria-expanded={resourcesOpen}
-                      aria-controls="mobile-resources"
-                      onClick={() => setResourcesOpen((v) => !v)}
+                      aria-expanded={mobileDropdown === link.href}
+                      aria-controls={`mobile-${dropdownId(link.href)}`}
+                      onClick={() =>
+                        setMobileDropdown((v) => (v === link.href ? null : (link.href as DropdownKey)))
+                      }
                       className="flex w-full items-center gap-4 py-4 text-left"
                     >
                       <span className="font-mono text-xs text-brand-violet">{String(i + 1).padStart(2, "0")}</span>
                       <span
                         className={`flex-1 text-[1.75rem] leading-none font-semibold tracking-tight transition-colors ${
-                          resourcesOpen ? "text-brand-violet" : "text-ink"
+                          mobileDropdown === link.href ? "text-brand-violet" : "text-ink"
                         }`}
                       >
                         {link.label}
                       </span>
                       <span
                         className={`flex h-9 w-9 items-center justify-center rounded-full transition duration-300 ${
-                          resourcesOpen
+                          mobileDropdown === link.href
                             ? "rotate-180 bg-linear-to-br from-brand-orchid to-brand-violet text-white"
                             : "ring-1 ring-ink/10"
                         }`}
@@ -763,29 +844,37 @@ export default function Navbar() {
                       </span>
                     </button>
                     <div
-                      id="mobile-resources"
-                      inert={!resourcesOpen}
+                      id={`mobile-${dropdownId(link.href)}`}
+                      inert={mobileDropdown !== link.href}
                       className={`grid transition-[grid-template-rows] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
-                        resourcesOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        mobileDropdown === link.href ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                       }`}
                     >
                       <div className="overflow-hidden">
                         <ul className="flex flex-col gap-0.5 pb-4">
-                          {resourceLinks.map(({ icon: Icon, title, description, href }) => (
-                            <li key={href}>
-                              <Link
-                                href={href}
+                          {dropdowns[link.href].map((item: DropdownLink) => (
+                            <li key={item.href}>
+                              <DropdownAnchor
+                                link={item}
                                 onClick={() => setOpen(false)}
                                 className="-mx-2.5 flex items-center gap-3 rounded-xl p-2.5 transition-colors active:bg-tint-50"
                               >
                                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg rounded-br-sm bg-tint-100 text-brand-violet">
-                                  <Icon className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+                                  <item.icon className="h-4 w-4" strokeWidth={1.8} aria-hidden />
                                 </span>
-                                <span>
-                                  <span className="block text-sm font-semibold text-ink">{title}</span>
-                                  <span className="block text-xs text-ink/50">{description}</span>
+                                <span className="min-w-0">
+                                  <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                                    {item.title}
+                                    {item.badge && (
+                                      <span className="rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-1.5 text-[10px] font-semibold text-white">
+                                        {item.badge}
+                                      </span>
+                                    )}
+                                    {item.external && <ArrowUpRight className="h-3.5 w-3.5 text-ink/35" aria-hidden />}
+                                  </span>
+                                  <span className="block text-xs text-ink/50">{item.description}</span>
                                 </span>
-                              </Link>
+                              </DropdownAnchor>
                             </li>
                           ))}
                         </ul>
