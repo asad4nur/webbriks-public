@@ -1,4 +1,15 @@
-import { ChartNoAxesCombined, CodeXml, Database, Server, ServerCog } from "lucide-react";
+import {
+  Blocks,
+  ChartNoAxesCombined,
+  CodeXml,
+  Database,
+  Gauge,
+  Palette,
+  Server,
+  ServerCog,
+  Store,
+  Wrench,
+} from "lucide-react";
 import type { CSSProperties } from "react";
 import type { IconType } from "react-icons";
 import { FaAws } from "react-icons/fa6";
@@ -21,6 +32,7 @@ import {
   SiPrisma,
   SiReact,
   SiRedis,
+  SiShopify,
   SiTailwindcss,
   SiTypescript,
   SiUbuntu,
@@ -32,6 +44,11 @@ type Group = { title: string; description: string; icon: typeof Server; items: T
 // Lucide's Server icon stands in for "VPS", which has no brand logo; it shares the IconType shape.
 const VpsIcon = Server as unknown as IconType;
 
+// The Shopify row lists the work we do on Shopify, so its tiles use Lucide icons and its row icon is the Shopify logo.
+const asIcon = (icon: typeof Server) => icon as unknown as IconType;
+const ShopifyRowIcon = SiShopify as unknown as typeof Server;
+const SHOPIFY_GREEN = "#7AB55C";
+
 const groups: Group[] = [
   {
     title: "Frontend",
@@ -42,6 +59,19 @@ const groups: Group[] = [
       { name: "React", icon: SiReact, color: "#149ECA" },
       { name: "TypeScript", icon: SiTypescript, color: "#3178C6" },
       { name: "Tailwind CSS", icon: SiTailwindcss, color: "#06B6D4" },
+    ],
+  },
+  {
+    title: "Shopify",
+    description: "Store design, development and fixes",
+    icon: ShopifyRowIcon,
+    items: [
+      { name: "Store setup", icon: asIcon(Store), color: SHOPIFY_GREEN },
+      { name: "Custom theme design", icon: asIcon(Palette), color: SHOPIFY_GREEN },
+      { name: "Liquid development", icon: asIcon(CodeXml), color: SHOPIFY_GREEN },
+      { name: "Apps & integrations", icon: asIcon(Blocks), color: SHOPIFY_GREEN },
+      { name: "Speed optimization", icon: asIcon(Gauge), color: SHOPIFY_GREEN },
+      { name: "Bug fixes", icon: asIcon(Wrench), color: SHOPIFY_GREEN },
     ],
   },
   {
