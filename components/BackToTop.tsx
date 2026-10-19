@@ -4,6 +4,7 @@ import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // Floating button that appears once the visitor has scrolled past half the screen height.
+// It sits above the WhatsApp button, which owns the bottom-right corner.
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
 
@@ -30,7 +31,7 @@ export default function BackToTop() {
       aria-label="Back to top"
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible}
-      className={`group fixed right-4 bottom-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_12px_30px_-10px_rgba(83,20,214,0.65)] ring-4 ring-white/70 transition-all duration-300 hover:-translate-y-1 hover:brightness-110 focus-visible:ring-brand-violet/40 sm:right-6 sm:bottom-6 sm:h-14 sm:w-14 ${
+      className={`group fixed right-4 bottom-20 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_12px_30px_-10px_rgba(83,20,214,0.65)] ring-4 ring-white/70 transition-all duration-300 hover:-translate-y-1 hover:brightness-110 focus-visible:ring-brand-violet/40 sm:right-6 sm:bottom-24 sm:h-14 sm:w-14 ${
         visible ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none translate-y-4 scale-90 opacity-0"
       }`}
     >

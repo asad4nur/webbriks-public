@@ -6,6 +6,11 @@ export const site = {
     { label: "Bangladesh", display: "+880 1977-201923", href: "tel:+8801977201923" },
     { label: "USA", display: "+1 (323) 982-3790", href: "tel:+13239823790" },
   ],
+  // Business WhatsApp, used by the floating chat button. `number` is digits only, with the country code.
+  whatsapp: {
+    number: "8801977201923",
+    message: "Hi Webbriks, I'd like to know more about your services.",
+  },
   responseTime: "We reply within one business day.",
   offices: [
     {

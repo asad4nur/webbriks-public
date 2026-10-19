@@ -1,6 +1,7 @@
 import BackToTop from "@/components/BackToTop";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default function HomeLayout({ children }: LayoutProps<"/">) {
   return (
@@ -9,6 +10,7 @@ export default function HomeLayout({ children }: LayoutProps<"/">) {
       {children}
       <Footer />
       <BackToTop />
+      <WhatsAppButton />
     </div>
   );
 }
