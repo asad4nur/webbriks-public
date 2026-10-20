@@ -9,6 +9,7 @@ import FounderMessage from "./_sections/FounderMessage";
 import Hero from "./_sections/Hero";
 import Marketing from "./_sections/Marketing";
 import OurWorkingProcess from "./_sections/OurWorkingProcess";
+import Pricing from "./_sections/Pricing";
 import Projects from "./_sections/Projects";
 import Services from "./_sections/Services";
 import SolutionFinder from "./_sections/SolutionFinder";
@@ -33,6 +34,7 @@ export default function Home() {
       <About />
       <FounderMessage />
       <TechStack />
+      <Pricing />
       <Faq />
       <CTA />
       <Contact />

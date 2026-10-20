@@ -1,8 +1,10 @@
 "use client";
 
+import { useCurrency } from "@/lib/currency";
+import { findPlan, formatAmount, localText } from "@/lib/pricing";
 import { site } from "@/lib/site";
 import { CheckCircle2, ChevronDown, Loader2, Send } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 const field =
   "mt-1.5 w-full rounded-xl bg-paper px-4 py-3 text-sm text-ink ring-1 ring-ink/[0.08] transition outline-none placeholder:text-ink/35 focus:bg-white focus:ring-2 focus:ring-brand-violet/40";
@@ -13,6 +15,24 @@ type Status = { state: "idle" | "sending" | "sent" } | { state: "error"; message
 // Sends to /api/contact, which emails the enquiry to the team from the server.
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>({ state: "idle" });
+  const serviceRef = useRef<HTMLSelectElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const currency = useCurrency();
+
+  // Coming from a pricing plan (/contact?plan=shopify-pro): pre-select the service and start the message.
+  useEffect(() => {
+    const found = findPlan(new URLSearchParams(window.location.search).get("plan") ?? "");
+    if (!found || !currency || !serviceRef.current || !messageRef.current) return;
+    const { group, plan } = found;
+    serviceRef.current.value = group.service;
+    if (!messageRef.current.value) {
+      const price = plan.price[currency];
+      messageRef.current.value =
+        price === null
+          ? `I'd like a quote for the ${plan.name} package (${localText(plan.tagline, currency)})\n\n`
+          : `I'm interested in the ${plan.name} plan (${formatAmount(price, currency)}${plan.unit ? ` ${plan.unit}` : ""}).\n\n`;
+    }
+  }, [currency]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -111,7 +131,13 @@ export default function ContactForm() {
       <label className="block sm:col-span-2">
         <span className={label}>What do you need? *</span>
         <span className="relative block">
-          <select name="service" required defaultValue="" className={`${field} appearance-none pr-10`}>
+          <select
+            ref={serviceRef}
+            name="service"
+            required
+            defaultValue=""
+            className={`${field} appearance-none pr-10`}
+          >
             <option value="" disabled>
               Select a service
             </option>
@@ -129,6 +155,7 @@ export default function ContactForm() {
       <label className="block sm:col-span-2">
         <span className={label}>Tell us about your project *</span>
         <textarea
+          ref={messageRef}
           name="message"
           required
           minLength={10}
