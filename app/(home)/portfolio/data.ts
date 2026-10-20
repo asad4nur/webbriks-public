@@ -77,46 +77,42 @@ const reportItems: PortfolioItem[] = reports.map((report, i) => ({
 }));
 
 const sampleItems: PortfolioItem[] = [
-  // Photography (SAMPLE)
+  // Photography: Webbriks' own shoots, then one SAMPLE
   {
     id: "photo-1",
     kind: "photo",
     category: "photography",
-    sample: true,
     shape: "portrait",
-    title: "Streetwear lookbook",
-    subtitle: "Fashion · On location",
-    image: u("1515886657613-9f3515b0c78f"),
+    title: "Leather jacket lookbook",
+    subtitle: "Fashion · On-model",
+    image: "/portfolio/photography/fashion-leather-jacket.webp",
   },
   {
     id: "photo-2",
     kind: "photo",
     category: "photography",
-    sample: true,
     shape: "square",
-    title: "Gold bracelet",
+    title: "Gold headband",
     subtitle: "Jewellery · Macro",
-    image: u("1611591437281-460bfbe1220a"),
+    image: "/portfolio/photography/jewelry-headband.webp",
   },
   {
     id: "photo-3",
     kind: "photo",
     category: "photography",
-    sample: true,
     shape: "landscape",
-    title: "Autumn flat lay",
+    title: "Spring flat lay",
     subtitle: "Apparel · Flat lay",
-    image: u("1556905055-8f358a7a47b2"),
+    image: "/portfolio/photography/apparel-flat-lay.webp",
   },
   {
     id: "photo-4",
     kind: "photo",
     category: "photography",
-    sample: true,
     shape: "portrait",
-    title: "Body lotion",
+    title: "Fino hair mask",
     subtitle: "Cosmetics · Studio",
-    image: u("1620916566398-39f1143ab7be"),
+    image: "/portfolio/photography/cosmetics-fino.webp",
   },
   {
     id: "photo-5",

@@ -75,6 +75,17 @@ function ProjectCard({ project, tone }: { project: Project; tone: (typeof tones)
     <article
       className={`group relative flex h-full flex-col overflow-hidden rounded-[2rem] shadow-[0_1px_3px_rgba(7,4,26,0.05),0_24px_50px_-30px_rgba(43,5,146,0.4)] ring-1 ring-brand-violet/10 transition duration-500 hover:shadow-[0_32px_64px_-30px_rgba(43,5,146,0.5)] ${tone.card}`}
     >
+      {project.url && (
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          draggable={false}
+          aria-label={`Visit ${project.name} website (opens in a new tab)`}
+          className="absolute inset-0 z-10 rounded-[2rem] focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:outline-none"
+        />
+      )}
+
       {/* Copy */}
       <div className="px-6 pt-6 sm:px-8 sm:pt-8">
         <div className="flex items-start justify-between gap-4">
@@ -82,12 +93,9 @@ function ProjectCard({ project, tone }: { project: Project; tone: (typeof tones)
             {project.industry}
           </span>
           {project.url && (
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Visit ${project.name} website (opens in a new tab)`}
-              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink text-white transition duration-300 group-hover:bg-linear-to-br group-hover:from-brand-orchid group-hover:to-brand-violet hover:scale-105"
+            <span
+              aria-hidden
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink text-white transition duration-300 group-hover:scale-105 group-hover:bg-linear-to-br group-hover:from-brand-orchid group-hover:to-brand-violet"
             >
               {/* On card hover the arrow slides out to the right while a fresh one slides in from the left */}
               <ArrowUpRight
@@ -98,7 +106,7 @@ function ProjectCard({ project, tone }: { project: Project; tone: (typeof tones)
                 className="absolute inset-0 m-auto h-4 w-4 -translate-x-[250%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 motion-reduce:transition-none"
                 aria-hidden
               />
-            </a>
+            </span>
           )}
         </div>
         <h3 className="mt-5 text-2xl font-semibold tracking-tight">{project.name}</h3>

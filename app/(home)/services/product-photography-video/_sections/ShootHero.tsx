@@ -8,9 +8,9 @@ const proof = ["Studio & on-location shoots", "Photos and video in one booking",
 const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=800&q=80`;
 const hero = u("1598300042247-d088f8ab3a91");
 const strip = [
-  { label: "Studio", image: u("1620916566398-39f1143ab7be") },
-  { label: "Lifestyle", image: u("1515886657613-9f3515b0c78f") },
-  { label: "Detail", image: u("1611591437281-460bfbe1220a") },
+  { label: "Studio", image: "/portfolio/photography/cosmetics-fino.webp" },
+  { label: "On-model", image: "/portfolio/photography/fashion-leather-jacket.webp" },
+  { label: "Detail", image: "/portfolio/photography/jewelry-headband.webp" },
   { label: "Reel", image: u("1505740420928-5e560c06d30e"), video: true },
 ];
 

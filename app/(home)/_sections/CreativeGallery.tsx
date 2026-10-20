@@ -27,16 +27,25 @@ const categories: Category[] = [
     description: "Studio and on-location shoots that show your products, and the people who use them, at their best.",
     tags: ["Studio", "Lifestyle", "On-model", "Flat lay"],
     tiles: [
+      // Webbriks' own shoots (public/portfolio/photography).
       {
-        src: u("1515886657613-9f3515b0c78f"),
-        alt: "Model in a yellow tracksuit on location",
-        label: "Fashion · on location",
+        src: "/portfolio/photography/fashion-leather-jacket.webp",
+        alt: "Male model in a tan leather jacket and wide black trousers, mid-stride",
+        label: "Fashion · on-model",
       },
-      { src: u("1611591437281-460bfbe1220a"), alt: "Close-up of a gold bracelet", label: "Jewelry · macro" },
-      { src: u("1620916566398-39f1143ab7be"), alt: "Body lotion tube on white linen", label: "Cosmetics · studio" },
       {
-        src: u("1556905055-8f358a7a47b2"),
-        alt: "Flat lay of knitwear, jeans and a watch",
+        src: "/portfolio/photography/jewelry-headband.webp",
+        alt: "Gold headband with sea-glass stones and crystal flowers",
+        label: "Jewelry · macro",
+      },
+      {
+        src: "/portfolio/photography/cosmetics-fino.webp",
+        alt: "Fino hair mask jar on a wet branch with red flowers, pink backdrop",
+        label: "Cosmetics · studio",
+      },
+      {
+        src: "/portfolio/photography/apparel-flat-lay.webp",
+        alt: "Flat lay of a floral blouse, rust skirt, white bag and sneakers on pink",
         label: "Apparel · flat lay",
       },
     ],

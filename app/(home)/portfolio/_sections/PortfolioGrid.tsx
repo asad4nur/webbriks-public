@@ -115,7 +115,16 @@ function Card({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             </span>
           )}
         </div>
-        <h3 className="mt-1.5 text-lg font-semibold tracking-tight">{item.title}</h3>
+        <h3 className="mt-1.5 text-lg font-semibold tracking-tight">
+          {item.kind === "site" && item.url ? (
+            <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-brand-violet">
+              {item.title}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          ) : (
+            item.title
+          )}
+        </h3>
         <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ink/55">{item.subtitle}</p>
 
         {item.kind === "site" && item.tags.length > 0 && (
@@ -171,105 +180,123 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
     );
   }
 
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`View ${item.title} larger`}
-      className="relative block w-full overflow-hidden rounded-2xl text-left focus-visible:ring-2 focus-visible:ring-brand-violet"
-    >
-      {item.kind === "site" && (
-        <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
-          <BrowserBar label={domain(item.url) ?? item.title} />
-          <span className="relative block aspect-[4/3]">
+  const className =
+    "relative block w-full overflow-hidden rounded-2xl text-left focus-visible:ring-2 focus-visible:ring-brand-violet";
+  const content = (
+    <>
+        {item.kind === "site" && (
+          <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
+            <BrowserBar label={domain(item.url) ?? item.title} />
+            <span className="relative block aspect-[4/3]">
+              <Image
+                src={item.image}
+                alt=""
+                fill
+                sizes={sizes}
+                className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
+              />
+            </span>
+          </span>
+        )}
+
+        {item.kind === "report" && (
+          <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
+            <BrowserBar label="Ads Manager" meta />
+            <Image
+              src={item.image}
+              alt=""
+              width={item.width}
+              height={item.height}
+              sizes={sizes}
+              className="h-auto w-full"
+            />
+          </span>
+        )}
+
+        {item.kind === "photo" && (
+          <span
+            className={`relative block bg-tint-100 ${
+              item.shape === "portrait" ? "aspect-[4/5]" : item.shape === "square" ? "aspect-square" : "aspect-[4/3]"
+            }`}
+          >
             <Image
               src={item.image}
               alt=""
               fill
               sizes={sizes}
-              className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
+              className="object-cover transition duration-700 group-hover:scale-[1.04]"
             />
           </span>
-        </span>
-      )}
+        )}
 
-      {item.kind === "report" && (
-        <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
-          <BrowserBar label="Ads Manager" meta />
-          <Image
-            src={item.image}
-            alt=""
-            width={item.width}
-            height={item.height}
-            sizes={sizes}
-            className="h-auto w-full"
-          />
-        </span>
-      )}
-
-      {item.kind === "photo" && (
-        <span
-          className={`relative block bg-tint-100 ${
-            item.shape === "portrait" ? "aspect-[4/5]" : item.shape === "square" ? "aspect-square" : "aspect-[4/3]"
-          }`}
-        >
-          <Image
-            src={item.image}
-            alt=""
-            fill
-            sizes={sizes}
-            className="object-cover transition duration-700 group-hover:scale-[1.04]"
-          />
-        </span>
-      )}
-
-      {item.kind === "ai" && (
-        <span className="block rounded-2xl bg-paper p-2">
-          <span className="grid grid-cols-2 gap-2">
-            <span className="relative col-span-2 block aspect-[16/9] overflow-hidden rounded-xl bg-white">
-              <Image src={item.image} alt="" fill sizes={sizes} className="object-cover" />
-              <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-ink/70">
-                Original photo
+        {item.kind === "ai" && (
+          <span className="block rounded-2xl bg-paper p-2">
+            <span className="grid grid-cols-2 gap-2">
+              <span className="relative col-span-2 block aspect-[16/9] overflow-hidden rounded-xl bg-white">
+                <Image src={item.image} alt="" fill sizes={sizes} className="object-cover" />
+                <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-ink/70">
+                  Original photo
+                </span>
               </span>
+              {tints.slice(0, 2).map((tint) => (
+                <span key={tint} className="relative block aspect-square overflow-hidden rounded-xl">
+                  <Image src={item.image} alt="" fill sizes="15vw" className="object-cover" />
+                  <span className={`absolute inset-0 mix-blend-multiply ${tint}`} />
+                </span>
+              ))}
             </span>
-            {tints.slice(0, 2).map((tint) => (
-              <span key={tint} className="relative block aspect-square overflow-hidden rounded-xl">
-                <Image src={item.image} alt="" fill sizes="15vw" className="object-cover" />
-                <span className={`absolute inset-0 mix-blend-multiply ${tint}`} />
-              </span>
-            ))}
+            <span className="mt-2 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs text-ink/60 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-orchid" aria-hidden />
+              <span className="truncate">{item.prompt}</span>
+            </span>
           </span>
-          <span className="mt-2 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs text-ink/60 shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-orchid" aria-hidden />
-            <span className="truncate">{item.prompt}</span>
-          </span>
-        </span>
-      )}
+        )}
 
-      {item.kind === "video" && (
-        <span className="relative block aspect-video bg-ink">
-          <Image
-            src={item.image}
-            alt=""
-            fill
-            sizes={sizes}
-            className="object-cover opacity-90 transition duration-700 group-hover:scale-[1.04]"
-          />
-          <span className="absolute inset-0 bg-linear-to-t from-ink/60 to-transparent" />
-          <span className="absolute top-1/2 left-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/50 backdrop-blur-md transition duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-brand-violet">
-            <Play className="ml-1 h-5 w-5 fill-current" aria-hidden />
+        {item.kind === "video" && (
+          <span className="relative block aspect-video bg-ink">
+            <Image
+              src={item.image}
+              alt=""
+              fill
+              sizes={sizes}
+              className="object-cover opacity-90 transition duration-700 group-hover:scale-[1.04]"
+            />
+            <span className="absolute inset-0 bg-linear-to-t from-ink/60 to-transparent" />
+            <span className="absolute top-1/2 left-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/50 backdrop-blur-md transition duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-brand-violet">
+              <Play className="ml-1 h-5 w-5 fill-current" aria-hidden />
+            </span>
+            <span className="absolute right-3 bottom-3 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px] text-white">
+              {item.length}
+            </span>
           </span>
-          <span className="absolute right-3 bottom-3 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px] text-white">
-            {item.length}
-          </span>
-        </span>
-      )}
+        )}
 
-      {item.kind !== "video" && (
-        <span className="pointer-events-none absolute top-3 right-3 flex h-8 w-8 scale-90 items-center justify-center rounded-full bg-white/90 text-brand-violet opacity-0 shadow transition group-hover:scale-100 group-hover:opacity-100">
-          <Maximize2 className="h-4 w-4" aria-hidden />
-        </span>
-      )}
+        {item.kind !== "video" && (
+          <span className="pointer-events-none absolute top-3 right-3 flex h-8 w-8 scale-90 items-center justify-center rounded-full bg-white/90 text-brand-violet opacity-0 shadow transition group-hover:scale-100 group-hover:opacity-100">
+            {item.kind === "site" && item.url ? (
+              <ArrowUpRight className="h-4 w-4" aria-hidden />
+            ) : (
+              <Maximize2 className="h-4 w-4" aria-hidden />
+            )}
+          </span>
+        )}
+    </>
+  );
+
+  // Website screenshots open the live site; everything else opens larger in the lightbox.
+  return item.kind === "site" && item.url ? (
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Visit ${item.title} website (opens in a new tab)`}
+      className={className}
+    >
+      {content}
+    </a>
+  ) : (
+    <button type="button" onClick={onOpen} aria-label={`View ${item.title} larger`} className={className}>
+      {content}
     </button>
   );
 }
