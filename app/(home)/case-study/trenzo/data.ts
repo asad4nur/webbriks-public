@@ -43,11 +43,34 @@ export const caseStudy = {
   ],
 
   /**
-   * The two pages where customers decide and buy, old vs new, shown after the store compare.
+   * The pages where customers browse, decide and buy, old vs new, shown after the store compare.
+   * Each image is the page content only (no top bar or menu), 1600×1177.
    * New = real screenshots of trenzobd.com (Obsidian Flow with engraving selected).
-   * SAMPLE: the old pages are recreations for illustration; swap in real old screenshots (1600×1184) if you have them.
+   * SAMPLE: the old pages are recreations for illustration; swap in real old screenshots if you have them.
    */
   pageCompares: [
+    {
+      label: "Shop page",
+      path: "trenzobd.com/products",
+      title: "A shop that helps customers",
+      highlight: "find the right wallet",
+      intro:
+        "The old shop was one long list sorted by nothing in particular. Now customers narrow it down by colour, price, feature and material, and every product looks its best.",
+      oldImage: "/case-studies/trenzo/shop-old-sample.webp",
+      newImage: "/case-studies/trenzo/shop-new.webp",
+      before: [
+        "Washed-out photos in a cramped grid",
+        "No filters, just categories and a pile of tags",
+        "Long, inconsistent product names",
+        "Colour and options hidden until the product page",
+      ],
+      after: [
+        "Filters for colour, price, features and material",
+        "Large, consistent product photos",
+        "Colour shown on every card, with price alongside",
+        "Add to Cart right from the shop",
+      ],
+    },
     {
       label: "Product page",
       path: "trenzobd.com/product/obsidian-flow",
@@ -55,8 +78,8 @@ export const caseStudy = {
       highlight: "make the decision easy",
       intro:
         "The product page is where customers decide. The old one made them dig for answers; the new one puts everything they need to say yes in one clear view.",
-      oldImage: "/case-studies/trenzo/old-pdp-sample.webp",
-      newImage: "/case-studies/trenzo/new-pdp.webp",
+      oldImage: "/case-studies/trenzo/pdp-old-sample.webp",
+      newImage: "/case-studies/trenzo/pdp-new.webp",
       before: [
         "Small, dull photos with no gallery",
         "Price, stock and options hard to spot",
@@ -78,8 +101,8 @@ export const caseStudy = {
       highlight: "gets out of the way",
       intro:
         "Fewer fields, clear steps and every way to pay. Customers see exactly what they're getting, engraving included, and finish the order in a minute.",
-      oldImage: "/case-studies/trenzo/old-checkout-sample.webp",
-      newImage: "/case-studies/trenzo/new-checkout.webp",
+      oldImage: "/case-studies/trenzo/checkout-old-sample.webp",
+      newImage: "/case-studies/trenzo/checkout-new.webp",
       before: [
         "12 fields to fill, most of them not needed",
         "Shipping cost hidden until a phone call",

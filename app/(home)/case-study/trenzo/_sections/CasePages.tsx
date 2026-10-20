@@ -2,7 +2,8 @@ import { CircleCheck, CircleX } from "lucide-react";
 import BeforeAfter from "../../../_sections/BeforeAfter";
 import { caseStudy } from "../data";
 
-// Page by page: the product page (where customers decide) and checkout (where they buy), old vs new.
+// Page by page: the shop (where customers browse), the product page (where they decide) and checkout (where they buy),
+// old vs new. Images show the page content only, so the change itself is easy to see.
 export default function CasePages() {
   const { client, pageCompares } = caseStudy;
 
@@ -10,7 +11,7 @@ export default function CasePages() {
     <section
       id="case-pages"
       aria-labelledby="case-pages-heading"
-      className="relative isolate border-t border-ink/[0.06] bg-white py-16 text-ink sm:py-24 lg:py-32"
+      className="relative isolate bg-white pt-4 pb-16 text-ink sm:pt-6 sm:pb-24 lg:pt-8 lg:pb-32"
     >
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
@@ -22,13 +23,13 @@ export default function CasePages() {
             id="case-pages-heading"
             className="mt-5 text-3xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl"
           >
-            Where customers decide,{" "}
+            Where customers browse,{" "}
             <span className="bg-linear-to-r from-brand-violet to-brand-orchid bg-clip-text text-transparent">
-              and where they buy
+              decide and buy
             </span>
           </h2>
           <p className="mt-4 text-base leading-relaxed text-ink/60 sm:text-lg">
-            Two pages make or break an online sale. Here&rsquo;s how each one changed.
+            Three pages make or break an online sale. Here&rsquo;s how each one changed.
           </p>
         </div>
 
@@ -64,7 +65,7 @@ export default function CasePages() {
                       {path}
                     </span>
                   </div>
-                  <div className="relative aspect-[1600/1184] max-h-[80svh] w-full">
+                  <div className="relative aspect-[1600/1177] max-h-[80svh] w-full">
                     <BeforeAfter
                       src={newImage}
                       beforeSrc={oldImage}
