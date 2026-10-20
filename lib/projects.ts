@@ -32,6 +32,15 @@ export const projects: Project[] = [
     image: "/projects/screens/mks-abaya.webp",
   },
   {
+    name: "Lookive",
+    url: "https://www.lookive.com/",
+    industry: "Fashion & beauty",
+    description:
+      "Multi-category store for abayas, bags, authentic skincare and leather shoes, with a bold product slider and order tracking.",
+    tags: ["Ecommerce", "Multi-category", "Order tracking"],
+    image: "/projects/screens/lookive-dark.webp",
+  },
+  {
     name: "Travelora",
     url: "https://travelora.us/",
     industry: "Travel",
