@@ -42,6 +42,60 @@ export const caseStudy = {
     { title: "One order dashboard", text: "SAMPLE: Every order in one place, nothing lost in DMs." },
   ],
 
+  /**
+   * The two pages where customers decide and buy, old vs new, shown after the store compare.
+   * New = real screenshots of trenzobd.com (Obsidian Flow with engraving selected).
+   * SAMPLE: the old pages are recreations for illustration; swap in real old screenshots (1600×1184) if you have them.
+   */
+  pageCompares: [
+    {
+      label: "Product page",
+      path: "trenzobd.com/product/obsidian-flow",
+      title: "Product pages that",
+      highlight: "make the decision easy",
+      intro:
+        "The product page is where customers decide. The old one made them dig for answers; the new one puts everything they need to say yes in one clear view.",
+      oldImage: "/case-studies/trenzo/old-pdp-sample.webp",
+      newImage: "/case-studies/trenzo/new-pdp.webp",
+      before: [
+        "Small, dull photos with no gallery",
+        "Price, stock and options hard to spot",
+        "One long wall of text instead of clear details",
+        "Orders by phone call or Facebook message",
+      ],
+      after: [
+        "Large photo gallery showing every angle",
+        "Price, stock and colour clear at a glance",
+        "Custom laser engraving with position preview",
+        "Order Now and Add to Cart side by side",
+        "Smart tracker add-on in one tap",
+      ],
+    },
+    {
+      label: "Checkout",
+      path: "trenzobd.com/checkout",
+      title: "A checkout that",
+      highlight: "gets out of the way",
+      intro:
+        "Fewer fields, clear steps and every way to pay. Customers see exactly what they're getting, engraving included, and finish the order in a minute.",
+      oldImage: "/case-studies/trenzo/old-checkout-sample.webp",
+      newImage: "/case-studies/trenzo/new-checkout.webp",
+      before: [
+        "12 fields to fill, most of them not needed",
+        "Shipping cost hidden until a phone call",
+        "Cash on delivery as the only way to pay",
+        "No engraving or personal touch",
+      ],
+      after: [
+        "Just name, phone and address",
+        "4-step progress bar and free delivery shown upfront",
+        "Cash on delivery, SSLCommerz and bKash",
+        "Engraving carried into the order summary",
+        "Warranty and replacement promises right before paying",
+      ],
+    },
+  ],
+
   challenges: [
     {
       problem: "SAMPLE: Orders came by DM and phone, and some got lost.",

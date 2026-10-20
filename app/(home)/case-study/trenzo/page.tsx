@@ -3,6 +3,7 @@ import Contact from "../../_sections/Contact";
 import CTA from "../../_sections/CTA";
 import CaseChallenges from "./_sections/CaseChallenges";
 import CaseHero from "./_sections/CaseHero";
+import CasePages from "./_sections/CasePages";
 import CaseResults from "./_sections/CaseResults";
 import CaseStory from "./_sections/CaseStory";
 import CaseWork from "./_sections/CaseWork";
@@ -15,12 +16,13 @@ export const metadata: Metadata = {
   robots: caseStudy.draft ? { index: false, follow: false } : undefined,
 };
 
-// The story: hero + facts → starting point & old vs new → challenges → results (dark) → what we did → quote → contact.
+// The story: hero + facts → starting point & old vs new → product page & checkout, old vs new → challenges → results (dark) → what we did → quote → contact.
 export default function TrenzoCaseStudyPage() {
   return (
     <main className="flex-1">
       <CaseHero />
       <CaseStory />
+      <CasePages />
       <CaseChallenges />
       <CaseResults />
       <CaseWork />
