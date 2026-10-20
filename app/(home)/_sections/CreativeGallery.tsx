@@ -10,7 +10,14 @@ import BeforeAfter from "./BeforeAfter";
 const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&q=80`;
 
 type Reach = "local" | "global";
-type Tile = { src: string; alt: string; label: string; overlay?: "play" | "prompt" | "variations" | "compare" };
+type Tile = {
+  src: string;
+  alt: string;
+  label: string;
+  overlay?: "play" | "prompt" | "variations" | "compare";
+  /** With overlay "compare": the real "before" image (same size as src). Without it the before is src, dulled. */
+  before?: string;
+};
 type Category = {
   name: string;
   reach: Reach;
@@ -56,22 +63,35 @@ const categories: Category[] = [
     description:
       "Background removal, colour correction and clean-up, so every image looks consistent and marketplace-ready.",
     tags: ["Background removal", "Colour correction", "Clipping path", "Ghost mannequin"],
+    // Webbriks' own retouching work (public/portfolio/retouching), each a real before/after pair.
+    // Placed by shape: near-4:3 photos in the large and small tiles, the wide sunglasses shot in the wide one.
     tiles: [
       {
-        src: u("1434389677669-e08b4cac3105"),
-        alt: "Knitted poncho on a hanger, clean background",
-        label: "Apparel · clean-up",
+        src: "/portfolio/retouching/tshirt-ghost.webp",
+        before: "/portfolio/retouching/tshirt-before.webp",
+        alt: "White cropped T-shirt: on a mannequin before, ghost-mannequin cut-out after",
+        label: "Ghost mannequin",
+        overlay: "compare",
       },
       {
-        src: u("1523275335684-37898b6baf30"),
-        alt: "White smartwatch on a grey background",
-        label: "Colour correction",
+        src: "/portfolio/retouching/boot-after.webp",
+        before: "/portfolio/retouching/boot-before.webp",
+        alt: "Football boot recoloured from grey-blue to orange and volt",
+        label: "Colour change",
+        overlay: "compare",
       },
-      { src: u("1599643478518-a784e5dc4c8f"), alt: "Gold pendant necklace", label: "Jewelry · retouch" },
       {
-        src: u("1622560480605-d83c853bc5c3"),
-        alt: "Leather backpack, before and after retouching",
-        label: "Drag to compare",
+        src: "/portfolio/retouching/ring-after.webp",
+        before: "/portfolio/retouching/ring-before.webp",
+        alt: "Pearl and crystal ring: raw photo before, cleaned and polished on white after",
+        label: "Jewelry · retouch",
+        overlay: "compare",
+      },
+      {
+        src: "/portfolio/retouching/sunglasses-after.webp",
+        before: "/portfolio/retouching/sunglasses-before.webp",
+        alt: "Shield sunglasses: studio photo before, clean background and lens after",
+        label: "Background & clean-up",
         overlay: "compare",
       },
     ],
@@ -282,7 +302,7 @@ function Frame({ tile, className, sizes }: { tile: Tile; className: string; size
   return (
     <figure className={`group relative overflow-hidden rounded-3xl bg-tint-100 ${className}`}>
       {overlay === "compare" ? (
-        <BeforeAfter src={src} alt={alt} />
+        <BeforeAfter src={src} beforeSrc={tile.before} alt={alt} sizes={sizes} />
       ) : (
         <Image
           src={src}

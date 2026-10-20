@@ -29,8 +29,8 @@ const marketplaces: { name: string; icon: IconType }[] = [
 const tools = [MousePointer2, PenTool, Eraser, Crop, Wand2, SunMedium];
 const layers = ["Shadow", "Product", "Clipping path", "Background"];
 
-// Placeholder product photo from Unsplash (same as the Creatives section).
-const photo = "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=1200&q=80";
+// One of our own retouching jobs (same as the Creatives section).
+const photo = { before: "/portfolio/retouching/ring-before.webp", after: "/portfolio/retouching/ring-after.webp" };
 
 export const CUTOUT_EXPERT = "https://cutoutexpert.com/";
 
@@ -193,7 +193,11 @@ function EditorScene() {
           {/* Canvas: drag to compare */}
           <div className="relative min-w-0 flex-1 p-3">
             <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
-              <BeforeAfter src={photo} alt="Leather backpack product photo, before and after retouching" />
+              <BeforeAfter
+                src={photo.after}
+                beforeSrc={photo.before}
+                alt="Pearl and crystal ring, before and after retouching"
+              />
             </div>
             <figcaption className="mt-2.5 text-center text-[11px] text-white/45">Drag the handle to compare</figcaption>
           </div>

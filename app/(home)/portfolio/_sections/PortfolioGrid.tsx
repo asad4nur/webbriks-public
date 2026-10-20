@@ -169,12 +169,13 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
   // Retouching: the slider itself is the interaction.
   if (item.kind === "beforeAfter") {
     return (
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.05]">
         <BeforeAfter
           src={item.image}
           beforeSrc={item.before}
           alt={`${item.title}, before and after retouching`}
           sizes={sizes}
+          fit="object-contain"
         />
       </div>
     );
