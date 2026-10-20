@@ -138,28 +138,28 @@ export const caseStudy = {
     },
   ],
 
-  /** SAMPLE figures. Compare the same metric over periods of the same length (e.g. 30 days vs 30 days). */
+  /** From the two Meta Ads Manager reports below: before the new store vs after it went live. */
   results: [
-    { label: "Cost per purchase", before: "$3.20", after: "$1.85", change: "−42%" },
-    { label: "Purchases per month", before: "120", after: "462", change: "3.8×" },
-    { label: "Return on ad spend", before: "1.4×", after: "3.8×", change: "+171%" },
+    { label: "Cost per purchase", before: "৳297", after: "৳176", change: "−41%" },
+    { label: "Website purchases", before: "194", after: "721", change: "3.7×" },
+    { label: "Ad spend, scaled up", before: "৳57.7k", after: "৳126.7k", change: "2.2×" },
   ],
 
-  /** SAMPLE: these are real Webbriks reports but not confirmed as Trenzo's. Replace with Trenzo's own. */
+  /** Trenzo's own Meta Ads Manager reports: before the new store, then after it went live. */
   reports: [
     {
-      image: "/reports/meta-report-1.webp",
-      width: 1200,
-      height: 460,
-      title: "462 website purchases",
-      detail: "$1.85 per purchase · $852.82 spent",
+      image: "/case-studies/trenzo/meta-before.webp",
+      width: 1188,
+      height: 434,
+      title: "Before: 194 website purchases",
+      detail: "৳297.17 per purchase · ৳57,651.75 spent",
     },
     {
-      image: "/reports/meta-report-3.webp",
-      width: 1200,
-      height: 460,
-      title: "441 website purchases",
-      detail: "$1.86 per purchase · $819.66 spent",
+      image: "/case-studies/trenzo/meta-after.webp",
+      width: 1190,
+      height: 434,
+      title: "After: 721 website purchases",
+      detail: "৳175.75 per purchase · ৳126,718.30 spent",
     },
   ] satisfies Report[],
 

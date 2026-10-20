@@ -4,7 +4,7 @@ import { caseStudy } from "../data";
 
 // The proof: before → after figures on a dark band, then the Ads Manager reports behind them.
 export default function CaseResults() {
-  const { draft, results, reports } = caseStudy;
+  const { results, reports } = caseStudy;
 
   return (
     <section
@@ -33,8 +33,7 @@ export default function CaseResults() {
             </span>
           </h2>
           <p className="mt-4 text-base leading-relaxed text-white/60 sm:text-lg">
-            Same metric, same length of time, before and after Webbriks took over.
-            {draft && <span className="text-brand-orchid"> Figures shown are samples.</span>}
+            Straight from Trenzo&rsquo;s Meta Ads Manager, before and after the new store went live.
           </p>
         </div>
 
@@ -65,7 +64,7 @@ export default function CaseResults() {
         {reports.length > 0 && (
           <>
             <p className="mt-14 text-center text-sm font-medium text-white/60">
-              Straight from Meta Ads Manager. Tap a report to see it full size.
+              Straight from Meta Ads Manager: before the new store, then after. Tap a report to see it full size.
             </p>
             <div className="[&_ul]:mt-6 md:[&_ul]:grid-cols-2">
               <ReportGallery reports={reports} />
