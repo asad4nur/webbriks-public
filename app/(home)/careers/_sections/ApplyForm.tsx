@@ -264,8 +264,8 @@ export default function ApplyForm({ positions, general }: { positions: string[];
           {status.state === "error" ? (
             <>
               {status.message} Or email your CV to{" "}
-              <a href={`mailto:${site.email}`} className="font-semibold underline">
-                {site.email}
+              <a href={`mailto:${site.careersEmail}`} className="font-semibold underline">
+                {site.careersEmail}
               </a>
               .
             </>

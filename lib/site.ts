@@ -2,6 +2,8 @@
 export const site = {
   name: "Webbriks",
   email: "info@webbriks.com",
+  /** Job applications (the careers form also sends here, via ADMIN_EMAIL / CAREERS_EMAIL on Vercel). */
+  careersEmail: "asad@webbriks.com",
   phones: [
     { label: "Bangladesh", display: "+880 1977-201923", href: "tel:+8801977201923" },
     { label: "USA", display: "+1 (323) 982-3790", href: "tel:+13239823790" },

@@ -1,4 +1,5 @@
 import { formatDeadline, GENERAL_APPLICATION, isOpen, type Job, jobs, todayInDhaka } from "@/lib/careers";
+import { site } from "@/lib/site";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -12,6 +13,7 @@ import {
   Rocket,
   ShieldCheck,
   TrendingUp,
+  UsersRound,
   Wallet,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -334,12 +336,15 @@ function JobCard({ job }: { job: Job }) {
     requirements,
     niceToHave,
     benefits,
+    openings,
+    apply,
   } = job;
   const meta = [
     { icon: BriefcaseBusiness, text: type },
     { icon: MapPin, text: location },
     { icon: CalendarDays, text: formatDeadline(deadline) },
     ...(salary ? [{ icon: Wallet, text: `Salary: ${salary}` }] : []),
+    ...(openings ? [{ icon: UsersRound, text: openings }] : []),
   ];
   const lists = [
     { title: "What you'll do", items: responsibilities },
@@ -395,8 +400,29 @@ function JobCard({ job }: { job: Job }) {
               ))}
             </div>
           )}
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-start">
             <ApplyButton position={title} />
+            {apply && (
+              <div className="flex-1 rounded-2xl bg-paper p-4 text-sm ring-1 ring-ink/[0.05] sm:p-5">
+                <p className="font-semibold">
+                  Or email{" "}
+                  <a
+                    href={`mailto:${site.careersEmail}?subject=${encodeURIComponent(apply.subject)}`}
+                    className="text-brand-violet underline-offset-2 hover:underline"
+                  >
+                    {site.careersEmail}
+                  </a>
+                </p>
+                <p className="mt-1 text-ink/55">
+                  Subject: <span className="font-medium text-ink/75">{apply.subject}</span>
+                </p>
+                <ol className="mt-3 list-decimal space-y-1 pl-5 text-ink/65">
+                  {apply.send.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </div>
         </div>
       </details>
