@@ -1,10 +1,11 @@
 import { ArrowUpRight, Star } from "lucide-react";
 import { FaGoogle } from "react-icons/fa6";
 
-import { google, type Review, reviews } from "@/lib/reviews";
+import { getGoogleReviews } from "@/lib/google-reviews";
+import { google, type Review } from "@/lib/reviews";
 
-// Real Google reviews only (see lib/reviews.ts). Few reviews sit in a grid; once there are 4 or more they
-// scroll in a row that moves right to left forever.
+// Real Google reviews only: live from Google when GOOGLE_PLACES_API_KEY is set, otherwise lib/reviews.ts.
+// Few reviews sit in a grid; once there are 4 or more they scroll in a row that moves right to left forever.
 const MARQUEE_FROM = 4;
 
 const initials = (name: string) =>
@@ -15,8 +16,8 @@ const initials = (name: string) =>
     .slice(0, 2)
     .toUpperCase();
 
-export default function Testimonials() {
-  const visible = reviews.filter((r) => r.approved);
+export default async function Testimonials() {
+  const { rating, count, reviews: visible } = await getGoogleReviews();
   if (visible.length === 0) return null;
 
   return (
@@ -57,10 +58,10 @@ export default function Testimonials() {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-paper">
               <FaGoogle className="h-4 w-4 text-[#4285F4]" aria-hidden />
             </span>
-            <span className="font-semibold">{google.rating.toFixed(1)}</span>
-            <Stars rating={Math.round(google.rating)} />
+            <span className="font-semibold">{rating.toFixed(1)}</span>
+            <Stars rating={Math.round(rating)} />
             <span className="text-ink/55">
-              {google.count} Google review{google.count === 1 ? "" : "s"}
+              {count} Google review{count === 1 ? "" : "s"}
             </span>
             <ArrowUpRight
               className="h-4 w-4 text-ink/35 transition group-hover:text-brand-violet"
@@ -145,10 +146,16 @@ function ReviewCard({ review }: { review: Review }) {
     <figure className="flex h-full flex-col rounded-3xl rounded-tr-[3rem] bg-white p-6 shadow-[0_1px_3px_rgba(7,4,26,0.05),0_18px_40px_-26px_rgba(43,5,146,0.3)] ring-1 ring-brand-violet/10 transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_56px_-26px_rgba(43,5,146,0.4)] hover:ring-brand-violet/25 sm:p-8">
       <div className="flex items-center justify-between gap-3">
         <Stars rating={review.rating} />
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-[11px] font-semibold text-ink/60">
+        <a
+          href={review.url ?? google.reviewsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-[11px] font-semibold text-ink/60 transition hover:text-brand-violet"
+        >
           <FaGoogle className="h-3 w-3 text-[#4285F4]" aria-hidden />
           Google review
-        </span>
+          <span className="sr-only">(opens Google in a new tab)</span>
+        </a>
       </div>
 
       <blockquote className="mt-5 mb-8 text-[15px] leading-relaxed text-ink/75 sm:mt-6 sm:text-base">

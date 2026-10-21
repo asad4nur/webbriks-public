@@ -23,9 +23,9 @@ import ApplyButton from "./_sections/ApplyButton";
 import ApplyForm from "./_sections/ApplyForm";
 
 export const metadata: Metadata = {
-  title: "Careers | Webbriks",
+  title: "We're Hiring | Careers at Webbriks",
   description:
-    "Join the Webbriks team. Open positions for designers, developers, video editors and marketers in Dhaka, Gaibandha and remote.",
+    "Now hiring in Dhaka: Sales & Marketing Executive, Photographer, Cinematographer & Video Editor, and Video Editor & Motion Graphic Designer. Full-time, on-site. Apply online.",
 };
 
 // "Why join" points from webbriks.com/careers.

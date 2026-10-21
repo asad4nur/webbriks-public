@@ -1,17 +1,29 @@
-// Real reviews from Web Briks LLC's Google Business Profile, copied word for word.
+// Reviews from Web Briks LLC's Google Business Profile.
 //
-// How a review gets onto the site: a client leaves it on Google (send them `google.writeReviewUrl`), we check it's
-// really from that client (a business we worked with, signed in as their brand or owner), then add it here with
-// `approved: true`. Anything not approved stays off the live site. Keep the text exactly as written on Google.
+// Live: with GOOGLE_PLACES_API_KEY set on Vercel, lib/google-reviews.ts pulls the listing's reviews from Google
+// every hour, so a new client review appears on the site by itself (Google returns the 5 most relevant).
+// What shows up automatically: 4–5 stars with at least a sentence of text, unless the author is in `hiddenAuthors`.
+// The list below is the fallback (no key, or Google unreachable) and adds the client name / industry to a review.
+// Keep review text exactly as written on Google.
 
 export const google = {
   name: "Web Briks LLC",
+  placeId: "ChIJP5ZhRQDBVTcRV4KpJzvbkWo",
+  /** Used when live data isn't available. */
   rating: 4.7,
   count: 3,
   /** Opens the listing's reviews on Google. */
   reviewsUrl: "https://www.google.com/search?q=Web+Briks+LLC#lrd=0x3755c1004561963f:0x6a91db3b27a98257,1",
-  /** Opens Google's "write a review" box for the listing. Send this to clients. */
-  writeReviewUrl: "https://www.google.com/search?q=Web+Briks+LLC#lrd=0x3755c1004561963f:0x6a91db3b27a98257,3",
+  /** Google's official "write a review" link for the listing. Send this to clients. */
+  writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJP5ZhRQDBVTcRV4KpJzvbkWo",
+};
+
+/** Auto-publish rules for live reviews. */
+export const autoPublish = {
+  minRating: 4,
+  minLength: 40,
+  /** Google display names never shown on the site (spam, not a client, asked to be removed…). */
+  hiddenAuthors: ["সংবাদ প্রতিদিন বিডি"],
 };
 
 export type Review = {
@@ -27,6 +39,8 @@ export type Review = {
   /** Optional: the person behind the account, once they're happy to be named. */
   person?: string;
   role?: string;
+  /** Link to the review on Google (live reviews only). */
+  url?: string;
 };
 
 export const reviews: Review[] = [
