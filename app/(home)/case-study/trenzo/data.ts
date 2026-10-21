@@ -1,3 +1,4 @@
+import { reviewByCompany } from "@/lib/reviews";
 import type { Report } from "../../services/performance-marketing/_sections/ReportGallery";
 
 // Everything on the Trenzo case study page comes from here.
@@ -189,6 +190,6 @@ export const caseStudy = {
   /** Project timeline. Hidden while empty; add the real dates, e.g. { when: "Week 1", what: "Audit" }. */
   timeline: [] as { when: string; what: string }[],
 
-  /** Client quote. Hidden while null; add a real, approved quote from Trenzo. */
-  quote: null as { text: string; name: string; role: string } | null,
+  /** Trenzo's own Google review (lib/reviews.ts). Hidden if it isn't approved there. */
+  quote: reviewByCompany("Trenzo") ?? null,
 };

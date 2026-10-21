@@ -1,5 +1,9 @@
 import { ArrowUpRight, Quote } from "lucide-react";
 import Link from "next/link";
+import { FaGoogle } from "react-icons/fa6";
+
+import { google } from "@/lib/reviews";
+import { Stars } from "../../../_sections/Testimonials";
 import { caseStudy } from "../data";
 
 // What we did (each links to its service page), how long it took, and what the client said.
@@ -90,17 +94,32 @@ export default function CaseWork() {
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_12px_28px_-10px_rgba(83,20,214,0.6)]">
               <Quote className="h-6 w-6 rotate-180 fill-current" aria-hidden />
             </span>
-            <blockquote className="mt-8 text-2xl leading-snug font-medium tracking-tight text-balance sm:text-3xl">
+            <div className="mt-8 flex justify-center">
+              <Stars rating={quote.rating} className="h-5 w-5" />
+            </div>
+            <blockquote className="mt-5 text-xl leading-relaxed font-medium tracking-tight text-balance sm:text-2xl">
               &ldquo;{quote.text}&rdquo;
             </blockquote>
-            <figcaption className="mt-8 flex items-center justify-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink font-semibold text-white">
-                {client.charAt(0)}
+            <figcaption className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <span className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink font-semibold text-white">
+                  {client.charAt(0)}
+                </span>
+                <span className="text-left">
+                  <span className="block font-semibold">{quote.person ?? quote.author}</span>
+                  <span className="block text-sm text-ink/55">{quote.role ? `${quote.role}, ${client}` : "Client"}</span>
+                </span>
               </span>
-              <span className="text-left">
-                <span className="block font-semibold">{quote.name}</span>
-                <span className="block text-sm text-ink/55">{quote.role}</span>
-              </span>
+              <a
+                href={google.reviewsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-ink/65 ring-1 ring-ink/[0.07] transition hover:text-brand-violet"
+              >
+                <FaGoogle className="h-3.5 w-3.5 text-[#4285F4]" aria-hidden />
+                Read it on Google
+                <span className="sr-only">(opens in a new tab)</span>
+              </a>
             </figcaption>
           </figure>
         </section>
