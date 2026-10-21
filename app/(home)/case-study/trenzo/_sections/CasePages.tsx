@@ -76,7 +76,7 @@ export default function CasePages() {
                     />
                   </div>
                 </div>
-                <p className="mt-3 text-center text-sm text-ink/45">Drag the handle to compare</p>
+                <p className="mt-3 text-center text-sm text-ink/45">Drag the handle to compare. Old pages are illustrated recreations.</p>
               </div>
 
               {/* What was wrong, what we changed */}

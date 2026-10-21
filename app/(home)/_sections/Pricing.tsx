@@ -4,37 +4,64 @@ import { ArrowRight, ArrowUpRight, Code2, Megaphone, ShoppingBag, Store } from "
 import Link from "next/link";
 
 import { CurrencyNote, Price } from "@/components/pricing/PlanCard";
-import { creative, marketing, type PlanGroup, startingPrice, websiteGroups } from "@/lib/pricing";
+import { useCurrency } from "@/lib/currency";
+import {
+  creative,
+  type Localized,
+  marketing,
+  pick,
+  type PlanGroup,
+  startingPrice,
+  websiteGroups,
+  websiteOrder,
+} from "@/lib/pricing";
 
-// Homepage teaser: one "from" price per service, each opening the matching part of /pricing.
-const cards: { group: PlanGroup; icon: typeof Store; points: string[]; unit: string }[] = [
-  {
+type Card = { group: PlanGroup; icon: typeof Store; points: Localized<string[]>; unit: string };
+
+const websiteCards: Record<string, Card> = {
+  shopify: {
     group: websiteGroups.find((g) => g.id === "shopify")!,
     icon: ShoppingBag,
-    points: ["Ready in weeks", "Theme or custom design", "Courier & payments set up"],
+    points: {
+      BDT: ["Ready in weeks", "Theme or custom design", "Courier & payments set up"],
+      USD: ["Ready in weeks", "Theme or custom design", "Payments, shipping & email flows"],
+    },
     unit: "one-time",
   },
-  {
+  laravel: {
     group: websiteGroups.find((g) => g.id === "laravel")!,
     icon: Store,
-    points: ["Hosting & domain included", "Template or Figma design", "Fraud & courier tools"],
+    points: {
+      BDT: ["Hosting & domain included", "Template or Figma design", "Fraud & courier tools"],
+      USD: ["Hosting & domain included", "Template or Figma design", "Stripe & PayPal checkout"],
+    },
     unit: "one-time",
   },
-  {
+  nextjs: {
     group: websiteGroups.find((g) => g.id === "nextjs")!,
     icon: Code2,
     points: ["Custom-coded on Next.js & Node.js", "Automation & CRM", "Landing pages on request"],
     unit: "one-time",
   },
-  {
-    group: marketing,
-    icon: Megaphone,
-    points: ["Meta & Google ads", "Creative direction", "8–12 social posts a month"],
-    unit: "/ month",
-  },
-];
+};
 
+const marketingCard: Card = {
+  group: marketing,
+  icon: Megaphone,
+  points: ["Meta & Google ads", "Creative direction", "8–12 social posts a month"],
+  unit: "/ month",
+};
+
+// Homepage teaser: one "from" price per service, each opening the matching part of /pricing.
+// Website cards follow the visitor's market order (Shopify first abroad, Next.js first in Bangladesh).
 export default function Pricing() {
+  const known = useCurrency();
+  const currency = known ?? "BDT";
+  const cards = [
+    ...websiteOrder[currency].filter((id) => websiteCards[id]).map((id) => websiteCards[id]),
+    marketingCard,
+  ];
+
   return (
     <section
       id="pricing"
@@ -65,7 +92,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+        <ul className={`mt-12 grid gap-4 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4 ${known ? "" : "invisible"}`}>
           {cards.map(({ group, icon: Icon, points, unit }) => (
             <li key={group.id}>
               <Link
@@ -88,7 +115,7 @@ export default function Pricing() {
                   <span className="text-sm text-ink/50">{unit}</span>
                 </p>
                 <ul className="mt-5 flex flex-col gap-1.5 border-t border-ink/[0.07] pt-5">
-                  {points.map((point) => (
+                  {pick(points, currency).map((point) => (
                     <li key={point} className="text-sm text-ink/65">
                       {point}
                     </li>
@@ -106,8 +133,11 @@ export default function Pricing() {
         <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-3xl bg-ink px-6 py-5 text-white sm:flex-row sm:px-8">
           <p className="text-sm text-white/75">
             <span className="font-semibold text-white">Web apps</span> quoted on your requirements ·{" "}
-            <span className="font-semibold text-white">Product photos</span> from{" "}
-            <Price price={startingPrice(creative)} className="font-semibold text-white" /> per product ·{" "}
+            <span className="font-semibold text-white">
+              {currency === "BDT" ? "Product photos" : "Photo editing"}
+            </span>{" "}
+            from <Price price={startingPrice(creative)} className="font-semibold text-white" />{" "}
+            {currency === "BDT" ? "per product" : "per image"} ·{" "}
             <CurrencyNote className="text-white/50" />
           </p>
           <Link

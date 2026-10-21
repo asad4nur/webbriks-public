@@ -58,7 +58,7 @@ export default function CaseStory() {
               />
             </div>
           </div>
-          <p className="mt-3 text-center text-sm text-ink/45">Drag the handle to compare the old and new store</p>
+          <p className="mt-3 text-center text-sm text-ink/45">Drag the handle to compare. The old store is an illustrated recreation.</p>
         </div>
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

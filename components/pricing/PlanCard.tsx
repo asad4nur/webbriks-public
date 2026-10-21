@@ -4,7 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 
 import { useCurrency } from "@/lib/currency";
-import { type Amount, type Currency, formatAmount, localText, type LocalizedText, type Plan, planHref } from "@/lib/pricing";
+import { type Amount, type Currency, formatAmount, type LocalizedText, pick, type Plan, planHref } from "@/lib/pricing";
 
 /** A price in the visitor's currency. Before the currency is known it keeps its space but stays blank. */
 export function Price({ price, className = "" }: { price: Record<Currency, Amount>; className?: string }) {
@@ -22,14 +22,14 @@ export function Price({ price, className = "" }: { price: Record<Currency, Amoun
 /** Text that changes with the currency (e.g. the ad-spend threshold). */
 export function LocalText({ text }: { text: LocalizedText }) {
   const currency = useCurrency();
-  return <>{localText(text, currency ?? "BDT")}</>;
+  return <>{pick(text, currency ?? "BDT")}</>;
 }
 
 export function CurrencyNote({ className = "" }: { className?: string }) {
   const currency = useCurrency();
   const copy: Record<Currency, string> = {
     BDT: "Prices in Bangladeshi Taka (৳)",
-    USD: "Prices in US Dollars ($)",
+    USD: "Prices in US Dollars ($) · Calls in your time zone",
   };
   return (
     <span className={`${currency ? "" : "invisible"} ${className}`}>{copy[currency ?? "BDT"]}</span>
@@ -38,8 +38,10 @@ export function CurrencyNote({ className = "" }: { className?: string }) {
 
 // One package: name, price, button and what's included. The highlighted plan (badge) gets the dark card.
 export default function PlanCard({ plan }: { plan: Plan }) {
+  const currency = useCurrency() ?? "BDT";
   const featured = Boolean(plan.badge);
-  const quote = plan.price.BDT === null;
+  const quote = plan.price[currency] === null;
+  const features = pick(plan.features, currency);
 
   return (
     <article
@@ -68,7 +70,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
       </p>
 
       <p className="relative mt-6 flex flex-wrap items-baseline gap-x-2">
-        <PlanPrice plan={plan} featured={featured} />
+        <PlanPrice plan={plan} currency={currency} featured={featured} />
       </p>
 
       <Link
@@ -83,7 +85,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
       </Link>
 
-      {plan.features.length > 0 && (
+      {features.length > 0 && (
         <div className={`relative mt-7 border-t pt-6 ${featured ? "border-white/10" : "border-ink/[0.07]"}`}>
           {plan.featuresIntro && (
             <p className={`mb-3 text-sm font-semibold ${featured ? "text-white" : "text-ink"}`}>
@@ -91,7 +93,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             </p>
           )}
           <ul className="flex flex-col gap-2.5">
-            {plan.features.map((feature) => (
+            {features.map((feature) => (
               <li
                 key={feature}
                 className={`flex gap-2.5 text-sm leading-snug ${featured ? "text-white/80" : "text-ink/70"}`}
@@ -113,7 +115,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
           {plan.bestFor && (
             <p>
               <span className={`font-semibold ${featured ? "text-white/75" : "text-ink/70"}`}>Best for:</span>{" "}
-              {plan.bestFor}
+              <LocalText text={plan.bestFor} />
             </p>
           )}
           {plan.note && (
@@ -127,14 +129,15 @@ export default function PlanCard({ plan }: { plan: Plan }) {
   );
 }
 
-function PlanPrice({ plan, featured }: { plan: Plan; featured: boolean }) {
-  if (plan.price.BDT === null) {
+function PlanPrice({ plan, currency, featured }: { plan: Plan; currency: Currency; featured: boolean }) {
+  const unit = pick(plan.unit, currency);
+  if (plan.price[currency] === null) {
     return <span className="text-3xl font-semibold tracking-tight sm:text-4xl">Custom quote</span>;
   }
   return (
     <>
       <Price price={plan.price} className="text-3xl font-semibold tracking-tight sm:text-4xl" />
-      {plan.unit && <span className={`text-sm ${featured ? "text-white/55" : "text-ink/50"}`}>{plan.unit}</span>}
+      {unit && <span className={`text-sm ${featured ? "text-white/55" : "text-ink/50"}`}>{unit}</span>}
     </>
   );
 }

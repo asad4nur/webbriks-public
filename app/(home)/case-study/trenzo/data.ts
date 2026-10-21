@@ -2,12 +2,12 @@ import type { Report } from "../../services/performance-marketing/_sections/Repo
 
 // Everything on the Trenzo case study page comes from here.
 //
-// ⚠️ DRAFT: values marked SAMPLE are placeholders for layout only. While `draft` is true the page shows a
-// "sample content" bar and is hidden from search engines. Replace every SAMPLE value with real, client-approved
-// figures and images, then set `draft: false`.
+// Results and Ads Manager reports are Trenzo's real figures. The "old" page images are illustrated recreations
+// (the page says so); swap in real screenshots of the old store if they turn up.
+// Set `draft: true` to show a "draft" bar and hide the page from search engines again.
 
 export const caseStudy = {
-  draft: true,
+  draft: false,
 
   client: "Trenzo",
   url: "https://trenzobd.com/",
@@ -22,31 +22,31 @@ export const caseStudy = {
     { label: "Industry", value: "Wallets & accessories" },
     { label: "Services", value: "Store redesign + Meta ads" },
     { label: "Market", value: "Bangladesh" },
-    { label: "Timeline", value: "SAMPLE · 3 months" },
+    { label: "Result", value: "3.7× website purchases" },
   ],
 
   /** Real current store (from Our Work). */
   newSite: "/projects/screens/trenzo.webp",
-  /** SAMPLE: replace with a real screenshot of the old store (same 1644×1210 size), e.g. from web.archive.org. */
-  oldSite: "/case-studies/trenzo/old-site-sample.webp",
+  /** Illustrated recreation of the old store (same 1644×1210 size). Replace with a real screenshot if available. */
+  oldSite: "/case-studies/trenzo/home-old.webp",
 
   startingPoint: [
-    "SAMPLE: Trenzo's products were premium, but the old store didn't feel that way. Pages were slow on mobile, product photos were inconsistent and checkout took too many steps.",
-    "SAMPLE: Most orders came through Facebook messages and phone calls, which made them easy to lose and hard to track. Ads were mostly boosted posts, with no way to see which ones actually sold.",
+    "Trenzo's wallets were premium, but its old online store didn't sell like it. Product pages left buyers with questions, checkout asked for too much, and every website sale was costing ৳297 in Meta ads.",
+    "We rebuilt the store around how people actually buy a wallet: clear product pages, custom engraving and a short checkout. Then we relaunched the ads with full purchase tracking.",
   ],
 
   improvements: [
-    { title: "Mobile-first design", text: "SAMPLE: Built for the phones most customers shop on." },
-    { title: "Faster checkout", text: "SAMPLE: Fewer steps, with cash on delivery built in." },
+    { title: "Mobile-first design", text: "Built for the phones most customers shop on." },
+    { title: "Faster checkout", text: "Name, phone and address, with cash on delivery, SSLCommerz and bKash." },
+    { title: "Custom engraving", text: "Names or logos laser-engraved, chosen and previewed on the product page." },
     { title: "Bulk-order channel", text: "A separate path for wholesale and corporate buyers." },
-    { title: "One order dashboard", text: "SAMPLE: Every order in one place, nothing lost in DMs." },
   ],
 
   /**
    * The pages where customers browse, decide and buy, old vs new, shown after the store compare.
    * Each image is the page content only (no top bar or menu), 1600×1177.
    * New = real screenshots of trenzobd.com (Obsidian Flow with engraving selected).
-   * SAMPLE: the old pages are recreations for illustration; swap in real old screenshots if you have them.
+   * Old = illustrated recreations (labelled on the page); swap in real old screenshots if you have them.
    */
   pageCompares: [
     {
@@ -121,20 +121,20 @@ export const caseStudy = {
 
   challenges: [
     {
-      problem: "SAMPLE: Orders came by DM and phone, and some got lost.",
-      solution: "A proper store with checkout and one dashboard for every order.",
+      problem: "Product pages left buyers with questions.",
+      solution: "A photo gallery, clear price, stock and options, and full details on every product.",
     },
     {
-      problem: "SAMPLE: Ads were boosted posts with no sales tracking.",
-      solution: "Meta Pixel and Conversion API set up, so every purchase is counted.",
+      problem: "Checkout asked for too much before a sale.",
+      solution: "A short checkout: name, phone and address, with three ways to pay.",
     },
     {
-      problem: "SAMPLE: The same few ads ran for months and got tired.",
-      solution: "Fresh creatives every week, with budget moved to the winners.",
+      problem: "Every website sale cost ৳297 in ads.",
+      solution: "Meta Pixel and Conversion API set up so ads optimise for real purchases. Cost per sale fell to ৳176.",
     },
     {
-      problem: "SAMPLE: Bulk buyers had no easy way to order.",
-      solution: "A dedicated bulk-order channel alongside cash on delivery.",
+      problem: "Bulk and corporate buyers had no clear way to order.",
+      solution: "A dedicated corporate and bulk-order page alongside the store.",
     },
   ],
 
@@ -186,18 +186,9 @@ export const caseStudy = {
     },
   ],
 
-  /** SAMPLE timeline. */
-  timeline: [
-    { when: "Week 1", what: "Audit of the old store and ad account" },
-    { when: "Week 2–4", what: "New design approved and built" },
-    { when: "Week 5", what: "New store live, tracking set up" },
-    { when: "Month 2–3", what: "Ads relaunched, tested and scaled" },
-  ],
+  /** Project timeline. Hidden while empty; add the real dates, e.g. { when: "Week 1", what: "Audit" }. */
+  timeline: [] as { when: string; what: string }[],
 
-  /** SAMPLE quote: replace with a real, approved quote from Trenzo. */
-  quote: {
-    text: "SAMPLE: Webbriks gave us a store that finally looks as premium as our wallets, and for the first time we can see exactly which ads bring sales.",
-    name: "SAMPLE Name",
-    role: "Founder, Trenzo",
-  },
+  /** Client quote. Hidden while null; add a real, approved quote from Trenzo. */
+  quote: null as { text: string; name: string; role: string } | null,
 };

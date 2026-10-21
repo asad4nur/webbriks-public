@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrency } from "@/lib/currency";
-import { findPlan, formatAmount, localText } from "@/lib/pricing";
+import { findPlan, formatAmount, pick } from "@/lib/pricing";
 import { site } from "@/lib/site";
 import { CheckCircle2, ChevronDown, Loader2, Send } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -29,8 +29,8 @@ export default function ContactForm() {
       const price = plan.price[currency];
       messageRef.current.value =
         price === null
-          ? `I'd like a quote for the ${plan.name} package (${localText(plan.tagline, currency)})\n\n`
-          : `I'm interested in the ${plan.name} plan (${formatAmount(price, currency)}${plan.unit ? ` ${plan.unit}` : ""}).\n\n`;
+          ? `I'd like a quote for the ${plan.name} package (${pick(plan.tagline, currency)})\n\n`
+          : `I'm interested in the ${plan.name} plan (${formatAmount(price, currency)}${plan.unit ? ` ${pick(plan.unit, currency)}` : ""}).\n\n`;
     }
   }, [currency]);
 

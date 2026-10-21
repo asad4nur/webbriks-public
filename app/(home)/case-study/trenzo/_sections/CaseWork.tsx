@@ -57,50 +57,54 @@ export default function CaseWork() {
           </ul>
 
           {/* Timeline */}
-          <ol className="mt-14 grid gap-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4 lg:gap-0">
-            {timeline.map(({ when, what }, i) => (
-              <li key={when} className="relative flex gap-4 lg:flex-col lg:gap-0 lg:pr-6">
-                {i < timeline.length - 1 && (
+          {timeline.length > 0 && (
+            <ol className="mt-14 grid gap-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4 lg:gap-0">
+              {timeline.map(({ when, what }, i) => (
+                <li key={when} className="relative flex gap-4 lg:flex-col lg:gap-0 lg:pr-6">
+                  {i < timeline.length - 1 && (
+                    <span
+                      aria-hidden
+                      className="absolute top-3 right-0 left-8 hidden h-0.5 bg-linear-to-r from-tint-200 to-brand-violet/30 lg:block"
+                    />
+                  )}
                   <span
-                    aria-hidden
-                    className="absolute top-3 right-0 left-8 hidden h-0.5 bg-linear-to-r from-tint-200 to-brand-violet/30 lg:block"
+                    className={`relative z-10 h-6 w-6 shrink-0 rounded-full ring-4 ring-white ${
+                      i === timeline.length - 1 ? "bg-linear-to-br from-brand-orchid to-brand-violet" : "bg-tint-200"
+                    }`}
                   />
-                )}
-                <span
-                  className={`relative z-10 h-6 w-6 shrink-0 rounded-full ring-4 ring-white ${
-                    i === timeline.length - 1 ? "bg-linear-to-br from-brand-orchid to-brand-violet" : "bg-tint-200"
-                  }`}
-                />
-                <span className="lg:mt-5">
-                  <span className="block font-mono text-xs font-medium text-brand-violet">{when}</span>
-                  <span className="mt-1 block text-sm font-medium text-ink/75">{what}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
+                  <span className="lg:mt-5">
+                    <span className="block font-mono text-xs font-medium text-brand-violet">{when}</span>
+                    <span className="mt-1 block text-sm font-medium text-ink/75">{what}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </section>
 
       {/* Client quote */}
-      <section aria-label={`What ${client} says`} className="relative isolate bg-tint-50 py-16 text-ink sm:py-24">
-        <figure className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_12px_28px_-10px_rgba(83,20,214,0.6)]">
-            <Quote className="h-6 w-6 rotate-180 fill-current" aria-hidden />
-          </span>
-          <blockquote className="mt-8 text-2xl leading-snug font-medium tracking-tight text-balance sm:text-3xl">
-            &ldquo;{quote.text}&rdquo;
-          </blockquote>
-          <figcaption className="mt-8 flex items-center justify-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink font-semibold text-white">
-              {client.charAt(0)}
+      {quote && (
+        <section aria-label={`What ${client} says`} className="relative isolate bg-tint-50 py-16 text-ink sm:py-24">
+          <figure className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_12px_28px_-10px_rgba(83,20,214,0.6)]">
+              <Quote className="h-6 w-6 rotate-180 fill-current" aria-hidden />
             </span>
-            <span className="text-left">
-              <span className="block font-semibold">{quote.name}</span>
-              <span className="block text-sm text-ink/55">{quote.role}</span>
-            </span>
-          </figcaption>
-        </figure>
-      </section>
+            <blockquote className="mt-8 text-2xl leading-snug font-medium tracking-tight text-balance sm:text-3xl">
+              &ldquo;{quote.text}&rdquo;
+            </blockquote>
+            <figcaption className="mt-8 flex items-center justify-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink font-semibold text-white">
+                {client.charAt(0)}
+              </span>
+              <span className="text-left">
+                <span className="block font-semibold">{quote.name}</span>
+                <span className="block text-sm text-ink/55">{quote.role}</span>
+              </span>
+            </figcaption>
+          </figure>
+        </section>
+      )}
     </>
   );
 }
