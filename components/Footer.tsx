@@ -1,3 +1,4 @@
+import { legalDocs } from "@/lib/legal";
 import { site } from "@/lib/site";
 import { ArrowUp, Mail, MapPin, Phone } from "lucide-react";
 import { cacheLife } from "next/cache";
@@ -142,7 +143,20 @@ export default function Footer() {
           </FooterColumn>
         </div>
 
-        <div className="mt-14 flex flex-col gap-5 border-t border-ink/[0.08] py-7 text-sm text-ink/50 md:flex-row md:items-center md:justify-between">
+        {/* Policies */}
+        <nav aria-label="Policies" className="mt-14 border-t border-ink/[0.08] pt-6">
+          <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            {legalDocs.map(({ slug, label }) => (
+              <li key={slug}>
+                <Link href={`/${slug}`} className="text-ink/55 transition-colors hover:text-brand-violet">
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="mt-6 flex flex-col gap-5 border-t border-ink/[0.08] py-7 text-sm text-ink/50 md:flex-row md:items-center md:justify-between">
           <p className="md:order-1">
             &copy; <CurrentYear /> {site.name}. All rights reserved.
           </p>
