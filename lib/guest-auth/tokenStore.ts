@@ -11,6 +11,7 @@ export interface GuestProfile {
   name: string;
   email: string;
   phone?: string;
+  isWhatsapp?: boolean;
 }
 
 type Listener = () => void;

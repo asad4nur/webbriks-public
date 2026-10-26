@@ -8,6 +8,7 @@ import {
   getToken,
   setProfile,
   setToken,
+  type GuestProfile,
 } from "./tokenStore";
 
 const SUPPORT = `${API_URL}/api/support`;
@@ -33,27 +34,46 @@ async function parseJson(res: Response) {
 }
 
 /**
- * Starts a guest session from the visitor's details. There is no email code: the visitor just tells us who
- * they are, and the support API returns the guest access token (plus the refresh cookie).
+ * Step 1: email a 6-digit code to the visitor. The support API only needs name + email; the phone number and
+ * the Turnstile token ride along for the team and for bot protection once the API checks them.
  */
-export async function startGuest(
-  details: { name: string; email: string; phone: string },
+export async function requestOtp(
+  details: GuestProfile & { turnstileToken?: string | null },
   signal?: AbortSignal,
 ): Promise<void> {
-  const body = { name: details.name.trim(), email: details.email.trim(), phone: details.phone.trim() };
-  const res = await fetch(`${SUPPORT}/guest/start`, {
+  const res = await fetch(`${SUPPORT}/guest/otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      name: details.name.trim(),
+      email: details.email.trim(),
+      phone: details.phone?.trim(),
+      isWhatsapp: details.isWhatsapp,
+      turnstileToken: details.turnstileToken ?? undefined,
+    }),
+    signal,
+  });
+  const data = await parseJson(res);
+  if (!res.ok || !data.success) {
+    throw new AuthError(data.message || "Failed to send the code.", res.status);
+  }
+}
+
+/** Step 2: check the code. On success the access token and the visitor's details are stored. */
+export async function verifyOtp(profile: GuestProfile, otp: string, signal?: AbortSignal): Promise<void> {
+  const res = await fetch(`${SUPPORT}/guest/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: profile.email.trim(), otp: otp.trim() }),
     credentials: "include",
     signal,
   });
   const data = await parseJson(res);
   if (!res.ok || !data.success || !data.data?.token) {
-    throw new AuthError(data.message || "Could not start the chat. Please try again.", res.status);
+    throw new AuthError(data.message || "Verification failed.", res.status);
   }
   setToken(data.data.token);
-  setProfile(body);
+  setProfile({ ...profile, email: profile.email.trim(), name: profile.name.trim() });
 }
 
 /**

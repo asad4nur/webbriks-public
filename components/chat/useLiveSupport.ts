@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { io, type Socket } from "socket.io-client";
 
 import { MAX_UPLOAD_SIZE, playNotificationSound } from "@/lib/chat/attachments";
+import { humanCheckEnabled } from "./Turnstile";
 import { API_URL } from "@/lib/chat/config";
-import { startGuest } from "@/lib/guest-auth/client";
-import { clearToken, getProfile, getToken, subscribe } from "@/lib/guest-auth/tokenStore";
+import { requestOtp, verifyOtp } from "@/lib/guest-auth/client";
+import { clearToken, getProfile, getToken, setProfile, subscribe } from "@/lib/guest-auth/tokenStore";
 
 export interface LiveMessage {
   _id: string;
@@ -17,7 +18,7 @@ export interface LiveMessage {
   attachments?: string[];
 }
 
-/** idle = the AI assistant is showing, details = name/email/phone form, live = connected to a human agent. */
+/** idle = the AI assistant is showing, details = name/email/phone form + email code, live = connected to a human agent. */
 export type Phase = "idle" | "details" | "live";
 
 // The live session id and mode survive a reload (an agent may reply hours later). The guest token itself is
@@ -71,9 +72,15 @@ const errorText = (err: unknown, fallback: string) =>
  */
 export function useLiveSupport(isOpen: boolean) {
   const [phase, setPhase] = useState<Phase>("idle");
+  const [step, setStep] = useState<"info" | "otp">("info");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [isWhatsapp, setIsWhatsapp] = useState(true);
+  const [otp, setOtp] = useState("");
+  // Cloudflare Turnstile token for the "send code" request; resetKey asks for a fresh one after each use.
+  const [humanToken, setHumanToken] = useState<string | null>(null);
+  const [humanKey, setHumanKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -96,6 +103,8 @@ export function useLiveSupport(isOpen: boolean) {
   // instead of retrying a dead token forever.
   const silentRef = useRef(false);
   const hasUnseenAgentMsg = useRef(false);
+  // The visitor's phone number, sent to the agent as the first line of a brand-new chat.
+  const introRef = useRef<string | null>(null);
   // Long-lived socket handlers read these instead of stale closures.
   const openRef = useRef(isOpen);
   const phaseRef = useRef(phase);
@@ -109,13 +118,14 @@ export function useLiveSupport(isOpen: boolean) {
     socketRef.current = null;
   }, []);
 
-  /** The token is dead: forget it and ask the visitor for their details again. */
+  /** The token is dead: forget it and ask the visitor to verify again. */
   const backToDetails = useCallback(
     (message: string) => {
       clearToken();
       dropSocket();
       silentRef.current = false;
       setPhase("details");
+      setStep("info");
       setError(message);
     },
     [dropSocket],
@@ -133,6 +143,8 @@ export function useLiveSupport(isOpen: boolean) {
         silentRef.current = false;
         setSessionId(sid);
         if (history?.length) setMessages(history);
+        else if (introRef.current) socket.emit("chat:message", { sessionId: sid, text: introRef.current });
+        introRef.current = null;
         storage.set(SESSION_KEY, sid);
         storage.set(MODE_KEY, "live-chat");
         setPhase("live");
@@ -169,7 +181,7 @@ export function useLiveSupport(isOpen: boolean) {
 
       socket.on("connect_error", () => {
         if (silentRef.current) {
-          backToDetails("Your session has expired. Please enter your details to continue.");
+          backToDetails("Your session has expired. Please verify your email to continue.");
           return;
         }
         dropSocket();
@@ -193,7 +205,7 @@ export function useLiveSupport(isOpen: boolean) {
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data.success) {
-          backToDetails("Your session has expired. Please enter your details to continue.");
+          backToDetails("Your session has expired. Please verify your email to continue.");
           return;
         }
         setSessionId(data.data.sessionId);
@@ -201,7 +213,7 @@ export function useLiveSupport(isOpen: boolean) {
         connectSocket(guestToken, data.data.sessionId);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") throw err;
-        backToDetails("Could not reconnect. Please enter your details to continue.");
+        backToDetails("Could not reconnect. Please verify your email to continue.");
       }
     },
     [backToDetails, connectSocket],
@@ -253,17 +265,56 @@ export function useLiveSupport(isOpen: boolean) {
     setName((v) => v || last?.name || "");
     setEmail((v) => v || last?.email || "");
     setPhone((v) => v || last?.phone || "");
+    setIsWhatsapp(last?.isWhatsapp ?? true);
+    setStep("info");
+    setOtp("");
     setError("");
     setPhase("details");
   }, []);
 
+  const introLine = () =>
+    `Hi, I'm ${name.trim()}. My ${isWhatsapp ? "WhatsApp number" : "phone number"} is ${phone.trim()}.`;
+
   const submitDetails = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim()) return;
+    const profile = { name, email, phone, isWhatsapp };
+    introRef.current = introLine();
+
+    // Already verified on this browser with the same email: no new code needed.
+    const stored = getToken();
+    if (stored && getProfile()?.email.toLowerCase() === email.trim().toLowerCase()) {
+      void guarded(async (signal) => {
+        await startSession(stored, signal);
+        setProfile({ ...profile, name: profile.name.trim(), email: profile.email.trim() });
+      }, "Could not connect to live support.");
+      return;
+    }
+
     void guarded(async (signal) => {
-      await startGuest({ name, email, phone }, signal);
+      await requestOtp({ ...profile, turnstileToken: humanToken }, signal);
+      setHumanToken(null);
+      setHumanKey((k) => k + 1);
+      setStep("otp");
+    }, "Failed to send the code. Please try again.");
+  };
+
+  const verifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim()) return;
+    void guarded(async (signal) => {
+      await verifyOtp({ name, email, phone, isWhatsapp }, otp, signal);
       await startSession(getToken()!, signal);
-    }, "Could not start the chat. Please try again.");
+    }, "Verification failed. Please try again.");
+  };
+
+  const editDetails = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStep("info");
+    setOtp("");
+    setError("");
+    setLoading(false);
   };
 
   const send = (text: string) => {
@@ -349,6 +400,9 @@ export function useLiveSupport(isOpen: boolean) {
     setName("");
     setEmail("");
     setPhone("");
+    setOtp("");
+    setStep("info");
+    introRef.current = null;
     setLoading(false);
     setError("");
     setSessionId(null);
@@ -361,9 +415,10 @@ export function useLiveSupport(isOpen: boolean) {
   };
 
   return {
-    phase, name, setName, email, setEmail, phone, setPhone, loading, error,
+    phase, step, name, setName, email, setEmail, phone, setPhone, isWhatsapp, setIsWhatsapp, otp, setOtp,
+    humanToken, setHumanToken, humanKey, needsHumanCheck: humanCheckEnabled, loading, error,
     token, messages, typing, ended, agentSeen, uploading, uploadError,
     unread, clearUnread: () => setUnread(0),
-    connect, submitDetails, send, onType, upload, leave, reset,
+    connect, submitDetails, verifyCode, editDetails, send, onType, upload, leave, reset,
   };
 }

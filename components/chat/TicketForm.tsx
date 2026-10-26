@@ -1,10 +1,13 @@
 "use client";
 
-import { Loader2, Ticket, X } from "lucide-react";
+import { CheckCircle2, Loader2, Ticket, X } from "lucide-react";
 import { useState } from "react";
 
 import { API_URL } from "@/lib/chat/config";
 import { getProfile } from "@/lib/guest-auth/tokenStore";
+
+import { fieldClass, labelClass, PhoneField, press, primaryButton } from "./fields";
+import Turnstile, { humanCheckEnabled } from "./Turnstile";
 
 export interface AIHistoryEntry {
   role: "user" | "model";
@@ -19,12 +22,9 @@ const CATEGORIES = [
   ["bug", "Bug report"],
 ] as const;
 
-const field =
-  "w-full rounded-xl bg-tint-50 px-3.5 py-2.5 text-[13px] text-ink ring-1 ring-ink/10 outline-none transition-shadow placeholder:text-ink/35 focus:ring-2 focus:ring-brand-violet/40 disabled:cursor-not-allowed disabled:opacity-60";
-const label = "mb-1.5 block text-[11px] font-medium tracking-wide text-ink/60 uppercase";
-
-// "Create a support ticket" form, opened from an AI reply. A verified visitor's details come from their session;
-// anyone else enters a name and email. The backend attaches the AI conversation to the ticket.
+// "Create a support ticket", opened from an AI reply. Name, email and phone are always required, and we ask
+// whether the number is on WhatsApp. A verified visitor's name and email come from their session.
+// The support API takes the contact number inside the description, and attaches the AI conversation itself.
 export default function TicketForm({
   token,
   history,
@@ -39,13 +39,18 @@ export default function TicketForm({
   const [profile] = useState(() => getProfile());
   const [name, setName] = useState(profile?.name ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
+  const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [isWhatsapp, setIsWhatsapp] = useState(profile?.isWhatsapp ?? true);
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState<string>("support");
   const [description, setDescription] = useState("");
+  const [humanToken, setHumanToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const ready = subject.trim() && description.trim() && (token || (name.trim() && email.trim()));
+  const verified = !!token && !!profile;
+  const ready =
+    subject.trim() && description.trim() && name.trim() && email.trim() && phone.trim() && (!humanCheckEnabled || humanToken);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,17 +58,19 @@ export default function TicketForm({
     setBusy(true);
     setError("");
     try {
+      const contact = `${isWhatsapp ? "WhatsApp" : "Phone"}: ${phone.trim()}`;
       const res = await fetch(`${API_URL}/api/ai-chat/ticket`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         credentials: "include",
         body: JSON.stringify({
           subject: subject.trim(),
-          description: description.trim(),
+          description: `${description.trim()}\n\n${contact}`,
           chatHistory: history,
           category,
-          name: name.trim() || undefined,
-          email: email.trim() || undefined,
+          name: name.trim(),
+          email: email.trim(),
+          turnstileToken: humanToken ?? undefined,
         }),
       });
       const data = await res.json();
@@ -76,64 +83,66 @@ export default function TicketForm({
   }
 
   return (
-    <form onSubmit={submit} className="absolute inset-x-0 top-14 bottom-0 z-10 flex flex-col bg-white">
+    <form onSubmit={submit} className="absolute inset-x-0 top-16 bottom-0 z-10 flex animate-chat-in flex-col bg-white">
       <div className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 pt-5 pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-brand-orchid to-brand-violet text-white">
-                <Ticket className="h-3.5 w-3.5" aria-hidden />
-              </span>
-              Create a support ticket
-            </h3>
-            <p className="mt-1 pl-9 text-[11px] leading-relaxed text-ink/55">Describe your issue and our team will follow up.</p>
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-brand-orchid to-brand-violet text-white shadow-[0_8px_20px_-8px_rgba(83,20,214,0.7)]">
+              <Ticket className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-[15px] font-semibold tracking-tight text-ink">Create a support ticket</h3>
+              <p className="text-xs text-ink/55">Our team will follow up by email.</p>
+            </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close ticket form" className="rounded-lg p-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink">
-            <X className="h-4 w-4" />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close ticket form"
+            className={`${press} -mt-1 -mr-1.5 flex h-10 w-10 items-center justify-center rounded-full text-ink/45 hover:bg-ink/5 hover:text-ink`}
+          >
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={label} htmlFor="tk-name">Name</label>
-            <input id="tk-name" value={name} onChange={(e) => setName(e.target.value)} disabled={!!token} placeholder="Your name" maxLength={120} className={field} />
+            <label className={labelClass} htmlFor="tk-name">Name</label>
+            <input id="tk-name" value={name} onChange={(e) => setName(e.target.value)} disabled={verified} placeholder="Your name" autoComplete="name" maxLength={120} className={fieldClass} />
           </div>
           <div>
-            <label className={label} htmlFor="tk-email">Email</label>
-            <input id="tk-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={!!token} placeholder="you@email.com" maxLength={200} className={field} />
+            <label className={labelClass} htmlFor="tk-email">Email</label>
+            <input id="tk-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={verified} placeholder="you@email.com" autoComplete="email" maxLength={200} className={fieldClass} />
           </div>
         </div>
-        {token && <p className="-mt-2 text-[10px] text-ink/45">Using your verified details.</p>}
+        <PhoneField id="tk-phone" phone={phone} onPhone={setPhone} isWhatsapp={isWhatsapp} onWhatsapp={setIsWhatsapp} />
 
         <div>
-          <label className={label} htmlFor="tk-subject">Subject</label>
-          <input id="tk-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Brief summary of your issue" maxLength={300} className={field} />
+          <label className={labelClass} htmlFor="tk-subject">Subject</label>
+          <input id="tk-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Brief summary of your issue" maxLength={300} className={fieldClass} />
         </div>
         <div>
-          <label className={label} htmlFor="tk-category">Category</label>
-          <select id="tk-category" value={category} onChange={(e) => setCategory(e.target.value)} className={field}>
+          <label className={labelClass} htmlFor="tk-category">Category</label>
+          <select id="tk-category" value={category} onChange={(e) => setCategory(e.target.value)} className={fieldClass}>
             {CATEGORIES.map(([value, text]) => (
               <option key={value} value={value}>{text}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={label} htmlFor="tk-description">Description</label>
-          <textarea id="tk-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your issue in detail…" rows={4} className={`${field} max-h-40 min-h-22 resize-y leading-relaxed`} />
+          <label className={labelClass} htmlFor="tk-description">How can we help?</label>
+          <textarea id="tk-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your issue in detail…" rows={4} className={`${fieldClass} max-h-40 min-h-24 resize-y leading-relaxed`} />
         </div>
+        <Turnstile onToken={setHumanToken} />
       </div>
 
-      <div className="shrink-0 border-t border-ink/8 px-5 pt-3 pb-5">
-        {error && <p role="alert" className="mb-2.5 text-center text-[11px] font-medium text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={!ready || busy}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-brand-orchid via-brand-violet to-brand-indigo py-3 text-[13px] font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Ticket className="h-4 w-4" aria-hidden />}
+      <div className="shrink-0 border-t border-ink/[0.07] bg-white px-5 pt-3 pb-5">
+        {error && <p role="alert" className="mb-2.5 text-center text-xs font-medium text-red-600">{error}</p>}
+        <button type="submit" disabled={!ready || busy} className={primaryButton}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CheckCircle2 className="h-4 w-4" aria-hidden />}
           {busy ? "Creating ticket…" : "Submit ticket"}
         </button>
-        <p className="mt-2.5 text-center text-[10px] text-ink/40">Your chat history is attached automatically.</p>
+        <p className="mt-2.5 text-center text-[11px] text-ink/40">Your chat history is attached automatically.</p>
       </div>
     </form>
   );
