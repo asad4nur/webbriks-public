@@ -77,3 +77,31 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Chat widget: panel pops out of the launcher corner, messages ease in. Short and ease-out so they never get in the way. */
+@theme {
+  --animate-chat-pop: chat-pop 0.22s cubic-bezier(0.2, 0, 0, 1) both;
+  --animate-chat-in: chat-in 0.2s cubic-bezier(0.2, 0, 0, 1) both;
+
+  @keyframes chat-pop {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes chat-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
