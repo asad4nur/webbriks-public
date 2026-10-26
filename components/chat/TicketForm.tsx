@@ -24,7 +24,7 @@ const CATEGORIES = [
 
 // "Create a support ticket", opened from an AI reply. Name, email and phone are always required, and we ask
 // whether the number is on WhatsApp. A verified visitor's name and email come from their session.
-// The support API takes the contact number inside the description, and attaches the AI conversation itself.
+// The number goes both in the payload (saved on the ticket and its contact) and in the description (older backends).
 export default function TicketForm({
   token,
   history,
@@ -70,6 +70,8 @@ export default function TicketForm({
           category,
           name: name.trim(),
           email: email.trim(),
+          phone: phone.trim(),
+          isWhatsapp,
           turnstileToken: humanToken ?? undefined,
         }),
       });
