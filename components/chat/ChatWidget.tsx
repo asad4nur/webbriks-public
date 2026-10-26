@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CalendarCheck,
   Headphones,
+  Headset,
   Loader2,
   Mail,
   MessageCircle,
@@ -297,9 +298,19 @@ export default function ChatWidget() {
             type="button"
             onClick={open}
             aria-label="Open chat"
-            className={`${press} group relative flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_12px_30px_-10px_rgba(83,20,214,0.65)] ring-4 ring-white/70 hover:-translate-y-1 hover:brightness-110 focus-visible:ring-brand-violet/40 sm:h-14 sm:w-14 ${gradient}`}
+            className={`group relative flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_12px_30px_-10px_rgba(83,20,214,0.65)] ring-4 ring-white/70 transition-[translate,scale,filter] duration-300 hover:-translate-y-1 hover:brightness-105 active:scale-[0.96] focus-visible:ring-brand-violet/40 motion-reduce:translate-y-0 motion-reduce:transition-none sm:h-14 sm:w-14 ${gradient}`}
           >
-            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
+            <span
+              aria-hidden
+              className="absolute inset-0 -z-10 animate-ping rounded-full bg-brand-violet/40 [animation-duration:2.5s] motion-reduce:hidden"
+            />
+            <Headset className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute right-full mr-3 hidden translate-x-2 rounded-full bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-ink opacity-0 shadow-[0_10px_30px_-12px_rgba(7,4,26,0.35)] ring-1 ring-ink/[0.07] transition-[translate,opacity] duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none lg:block"
+            >
+              Chat with us — Live support
+            </span>
             {live.unread > 0 && (
               <span
                 aria-label={`${live.unread} unread messages`}
