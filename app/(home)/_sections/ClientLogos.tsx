@@ -11,13 +11,23 @@ export type Client = {
 };
 
 const clients: Client[] = [
+  { name: "Aesthetic Pixel Studio", logo: "/client-logos/aesthetic-pixel-studio.png", invert: true, scale: 1.5 },
   { name: "AyurLife", logo: "/client-logos/ayurlif.png" },
+  { name: "Catalyst Advisory", logo: "/client-logos/catalyst-advisory.png", invert: true, scale: 1.15 },
+  { name: "Cutout Expert", logo: "/client-logos/cutout-expert.png" },
   { name: "Flexzon", logo: "/client-logos/flexzonlogo.png" },
   { name: "Hossain Furniture", logo: "/client-logos/hossain-furniture.png" },
   { name: "Kinobd", logo: "/client-logos/kinobdlogo.svg" },
+  { name: "Lookive", logo: "/client-logos/lookive.png", invert: true },
+  { name: "Lunelle", logo: "/client-logos/lunelle.png" },
+  { name: "MKS Abaya", logo: "/client-logos/mks-abaya.png" },
+  { name: "Neer Kutir", logo: "/client-logos/neer-kutir.png" },
   { name: "Pannas", logo: "/client-logos/pannas.png", invert: true, scale: 2.2 },
+  { name: "Professor Lifestyle", logo: "/client-logos/professor-lifestyle.png" },
   { name: "REDCon Ltd.", logo: "/client-logos/red-con.png", invert: true },
+  { name: "Travelora", logo: "/client-logos/travelora.png" },
   { name: "Trenzo", logo: "/client-logos/trenzo.svg", invert: true },
+  { name: "TrueSense", logo: "/client-logos/truesense.png" },
   { name: "ViscosiTee", logo: "/client-logos/viscositee.svg" },
   { name: "Wild", logo: "/client-logos/Wild_Logo.svg" },
 ];
@@ -42,14 +52,14 @@ export default function ClientLogos() {
             </span>
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-ink/60 sm:mt-4 sm:text-lg">
-            From fashion labels to furniture makers, growing businesses across Bangladesh trust us to build their
+            From fashion labels to furniture makers, growing businesses in Bangladesh and abroad trust us to build their
             websites and bring them customers.
           </p>
         </div>
 
         <div className="mt-8 space-y-1 py-3 sm:mt-12 md:hidden">
-          <LogoMarquee className="py-1" items={clients.slice(0, 5)} cardClassName={card} logoClassName={logo} reverse />
-          <LogoMarquee className="py-1" items={clients.slice(5)} cardClassName={card} logoClassName={logo} />
+          <LogoMarquee className="py-1" items={clients.slice(0, 10)} cardClassName={card} logoClassName={logo} reverse />
+          <LogoMarquee className="py-1" items={clients.slice(10)} cardClassName={card} logoClassName={logo} />
         </div>
         <LogoMarquee
           className="mt-12 hidden py-4 md:block"
