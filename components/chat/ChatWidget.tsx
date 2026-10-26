@@ -270,7 +270,7 @@ export default function ChatWidget() {
       ? { title: "Webbriks assistant", sub: "AI replies instantly" }
       : phase === "details"
         ? { title: "Talk to our team", sub: live.step === "otp" ? "Verify your email" : "A few details first" }
-        : { title: "Live support", sub: live.ended ? "Chat ended" : agentJoined ? "Connected" : "Waiting for an agent" };
+        : { title: "Live support", sub: live.handedOff ? "Continues on WhatsApp" : live.ended ? "Chat ended" : agentJoined ? "Connected" : "Waiting for an agent" };
 
   let lastOwn = -1;
   live.messages.forEach((m, i) => {

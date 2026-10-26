@@ -63,7 +63,7 @@ export default function Turnstile({ onToken, resetKey = 0 }: { onToken: (token: 
         if (cancelled || !window.turnstile) return;
         widgetId = window.turnstile.render(el, {
           sitekey: SITE_KEY,
-          appearance: "interaction-only",
+          appearance: "always",
           theme: "light",
           callback: (token: string) => answer(token),
           "expired-callback": () => answer(null),

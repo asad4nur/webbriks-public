@@ -88,6 +88,8 @@ export function useLiveSupport(isOpen: boolean) {
   const [messages, setMessages] = useState<LiveMessage[]>([]);
   const [typing, setTyping] = useState<string | null>(null);
   const [ended, setEnded] = useState(false);
+  // The team moved this chat to WhatsApp: it is read-only here and the visitor is told to continue there.
+  const [handedOff, setHandedOff] = useState(false);
   const [agentSeen, setAgentSeen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -167,9 +169,16 @@ export function useLiveSupport(isOpen: boolean) {
 
       // The server sends this to the room except the sender, so we only get it when the agent has read.
       socket.on("chat:seen", () => setAgentSeen(true));
-      socket.on("chat:agent_joined", ({ agentName }: { agentName: string }) =>
-        setMessages((prev) => [...prev, systemMessage(`${agentName} has joined the chat.`)]),
-      );
+      // Once per agent: the server repeats the notice, and a visitor should not see "joined" again and again.
+      socket.on("chat:agent_joined", ({ agentName }: { agentName: string }) => {
+        const text = `${agentName} has joined the chat.`;
+        setMessages((prev) => (prev.some((m) => m.senderModel === "System" && m.content === text) ? prev : [...prev, systemMessage(text)]));
+      });
+      socket.on("chat:handoff", () => {
+        setEnded(true);
+        setHandedOff(true);
+        storage.clear();
+      });
       socket.on("chat:typing", ({ userName, isTyping }: { userName: string; isTyping: boolean }) =>
         setTyping(isTyping ? userName : null),
       );
@@ -210,6 +219,7 @@ export function useLiveSupport(isOpen: boolean) {
         }
         setSessionId(data.data.sessionId);
         setEnded(false);
+        setHandedOff(false);
         connectSocket(guestToken, data.data.sessionId);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") throw err;
@@ -409,6 +419,7 @@ export function useLiveSupport(isOpen: boolean) {
     setMessages([]);
     setTyping(null);
     setEnded(false);
+    setHandedOff(false);
     setAgentSeen(false);
     setUploading(false);
     setUploadError("");
@@ -417,7 +428,7 @@ export function useLiveSupport(isOpen: boolean) {
   return {
     phase, step, name, setName, email, setEmail, phone, setPhone, isWhatsapp, setIsWhatsapp, otp, setOtp,
     humanToken, setHumanToken, humanKey, needsHumanCheck: humanCheckEnabled, loading, error,
-    token, messages, typing, ended, agentSeen, uploading, uploadError,
+    token, messages, typing, ended, handedOff, agentSeen, uploading, uploadError,
     unread, clearUnread: () => setUnread(0),
     connect, submitDetails, verifyCode, editDetails, send, onType, upload, leave, reset,
   };
