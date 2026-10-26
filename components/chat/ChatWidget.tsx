@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { API_URL } from "@/lib/chat/config";
+import { getToken } from "@/lib/guest-auth/tokenStore";
 
 import Attachment from "./Attachment";
 import { fieldClass, labelClass, PhoneField, press, primaryButton } from "./fields";
@@ -203,14 +204,14 @@ export default function ChatWidget() {
 
     try {
       // The AI backend can be briefly busy: retry up to 3 times when it says the error is retryable.
-      let data: { success?: boolean; message?: string; retryable?: boolean; conversationId?: string; data?: { reply: string; action?: DisplayMessage["action"] } } | null = null;
+      let data: { success?: boolean; message?: string; retryable?: boolean; conversationId?: string; data?: { reply: string; action?: DisplayMessage["action"]; ticket?: { ticketId: string } | null } } | null = null;
       let failure: Error | null = null;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt) await new Promise((r) => setTimeout(r, 2000 * attempt));
         try {
           const res = await fetch(`${API_URL}/api/ai-chat/chat`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
             credentials: "include",
             body: JSON.stringify({ message: text, history, conversationId }),
           });
@@ -224,7 +225,7 @@ export default function ChatWidget() {
       }
       if (!data?.success || !data.data) throw failure ?? new Error("No reply");
 
-      const { reply, action } = data.data;
+      const { reply, action, ticket } = data.data;
       if (data.conversationId) {
         setConversationId(data.conversationId);
         store.set(AI_ID_KEY, data.conversationId);
@@ -236,7 +237,9 @@ export default function ChatWidget() {
       ];
       setHistory(nextHistory);
       store.set(AI_HISTORY_KEY, JSON.stringify(nextHistory));
-      addMessage("assistant", reply, action);
+      // The assistant raised the ticket itself: no form button, just the confirmation.
+      addMessage("assistant", reply, ticket ? undefined : action);
+      if (ticket) addMessage("system", `Ticket ${ticket.ticketId} has been created. We'll reply by email or WhatsApp.`);
     } catch {
       addMessage("system", "Sorry, I'm having trouble connecting right now. Please try again in a moment.");
     } finally {
