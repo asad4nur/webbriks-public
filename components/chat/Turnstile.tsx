@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 
 // Cloudflare Turnstile bot check. Without NEXT_PUBLIC_TURNSTILE_SITE_KEY it renders nothing and the forms work
 // as before, so local development needs no key. "interaction-only" keeps it invisible unless Cloudflare needs
-// the visitor to do something.
+// the visitor to do something. If the check cannot run (script blocked, error, no answer in 10 s) it reports
+// UNAVAILABLE instead of locking the visitor out; the support API decides what to do with such a request.
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 const SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -20,6 +21,8 @@ declare global {
 }
 
 export const humanCheckEnabled = !!SITE_KEY;
+export const UNAVAILABLE = "unavailable";
+const GIVE_UP_MS = 10_000;
 
 let scriptReady: Promise<void> | null = null;
 function loadScript() {
@@ -46,6 +49,14 @@ export default function Turnstile({ onToken, resetKey = 0 }: { onToken: (token: 
     const el = box.current;
     let cancelled = false;
     let widgetId: string | undefined;
+    let answered = false;
+    const answer = (token: string | null) => {
+      answered = answered || token !== null;
+      onToken(token);
+    };
+    const giveUp = setTimeout(() => {
+      if (!answered) onToken(UNAVAILABLE);
+    }, GIVE_UP_MS);
 
     loadScript()
       .then(() => {
@@ -54,15 +65,16 @@ export default function Turnstile({ onToken, resetKey = 0 }: { onToken: (token: 
           sitekey: SITE_KEY,
           appearance: "interaction-only",
           theme: "light",
-          callback: (token: string) => onToken(token),
-          "expired-callback": () => onToken(null),
-          "error-callback": () => onToken(null),
+          callback: (token: string) => answer(token),
+          "expired-callback": () => answer(null),
+          "error-callback": () => answer(UNAVAILABLE),
         });
       })
-      .catch(() => onToken(null));
+      .catch(() => answer(UNAVAILABLE));
 
     return () => {
       cancelled = true;
+      clearTimeout(giveUp);
       if (widgetId) window.turnstile?.remove(widgetId);
     };
   }, [onToken, resetKey]);
