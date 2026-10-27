@@ -10,7 +10,6 @@ import { categories, type CategoryId, portfolio, type PortfolioItem, serviceFor 
 
 type Filter = "all" | CategoryId;
 
-const tints = ["bg-brand-violet/45", "bg-brand-orchid/45", "bg-[#6b7cff]/45"];
 const domain = (url?: string) => url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 export default function PortfolioGrid() {
@@ -231,24 +230,28 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
         )}
 
         {item.kind === "ai" && (
-          <span className="block rounded-2xl bg-paper p-2">
-            <span className="grid grid-cols-2 gap-2">
-              <span className="relative col-span-2 block aspect-[16/9] overflow-hidden rounded-xl bg-white">
-                <Image src={item.image} alt="" fill sizes={sizes} className="object-cover" />
-                <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-ink/70">
-                  Original photo
-                </span>
-              </span>
-              {tints.slice(0, 2).map((tint) => (
-                <span key={tint} className="relative block aspect-square overflow-hidden rounded-xl">
-                  <Image src={item.image} alt="" fill sizes="15vw" className="object-cover" />
-                  <span className={`absolute inset-0 mix-blend-multiply ${tint}`} />
-                </span>
-              ))}
+          <span className="relative block aspect-[4/5] bg-ink">
+            <Image
+              src={item.image}
+              alt=""
+              fill
+              unoptimized={item.animated}
+              sizes={sizes}
+              className="object-cover transition duration-700 group-hover:scale-[1.03]"
+            />
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
+              {item.animated ? "AI GIF" : "AI generated"}
             </span>
-            <span className="mt-2 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs text-ink/60 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-orchid" aria-hidden />
-              <span className="truncate">{item.prompt}</span>
+            <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur">
+              <span className="relative block h-11 w-11 overflow-hidden rounded-xl bg-paper">
+                <Image src={item.product} alt="" fill sizes="44px" className="object-contain" />
+              </span>
+              <span className="text-[11px] leading-tight font-semibold text-ink/70">
+                Made from the
+                <br />
+                client&rsquo;s product photo
+              </span>
             </span>
           </span>
         )}
@@ -371,6 +374,30 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
         ) : item.kind === "beforeAfter" ? (
           <div className="relative aspect-[4/3] max-h-[75svh]">
             <BeforeAfter src={item.image} beforeSrc={item.before} alt={item.title} sizes="1152px" />
+          </div>
+        ) : item.kind === "ai" ? (
+          <div className="grid bg-ink sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
+            <Image
+              src={item.image}
+              alt={`${item.title}: ${item.subtitle}`}
+              width={900}
+              height={1125}
+              unoptimized={item.animated}
+              sizes="(min-width:1200px) 640px, 100vw"
+              className="h-auto max-h-[70svh] w-full object-contain"
+            />
+            <div className="flex flex-col justify-center gap-4 p-6 text-white sm:p-8">
+              <p className="text-xs font-semibold tracking-wider text-white/50 uppercase">The client&rsquo;s brief</p>
+              <blockquote className="text-base leading-relaxed text-white/85">&ldquo;{item.brief}&rdquo;</blockquote>
+              <Link
+                href="/services/ai-creatives#ai-projects"
+                onClick={onClose}
+                className="group inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand-orchid hover:text-white"
+              >
+                See what they sent and how we made it
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            </div>
           </div>
         ) : (
           <Image

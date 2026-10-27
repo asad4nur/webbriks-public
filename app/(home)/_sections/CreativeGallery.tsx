@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Globe, MapPin, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Globe, MapPin, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from "react";
@@ -14,15 +14,23 @@ type Tile = {
   src: string;
   alt: string;
   label: string;
-  overlay?: "play" | "prompt" | "variations" | "compare";
+  overlay?: "play" | "compare" | "set";
   /** With overlay "compare": the real "before" image (same size as src). Without it the before is src, dulled. */
   before?: string;
+  /** With overlay "set": images shown side by side, each with its own caption. */
+  set?: { src: string; label: string }[];
+  /** GIFs and animated WebPs, which must be served as they are so they keep moving. */
+  animated?: boolean;
+  /** CSS object-position, for tall images in short tiles. */
+  focus?: string;
 };
 type Category = {
   name: string;
   reach: Reach;
   description: string;
   tags: string[];
+  /** Extra link next to the main button, e.g. to the full project write-up. */
+  more?: { label: string; href: string };
   /** [large, small, small, wide] */
   tiles: [Tile, Tile, Tile, Tile];
 };
@@ -101,21 +109,39 @@ const categories: Category[] = [
     reach: "global",
     description:
       "Ad visuals, new scenes and variations made with AI, so you can test more ideas and find winners faster.",
-    tags: ["Ad visuals", "AI scenes", "Mockups", "Variations"],
+    tags: ["Ad visuals", "AI scenes", "Product in use", "GIFs", "Variations"],
+    more: { label: "See the client's brief", href: "/services/ai-creatives#ai-projects" },
+    // Webbriks' own AI work (public/ai-projects). Details for each project live in lib/ai-projects.ts.
     tiles: [
       {
-        src: u("1572635196237-14b3f281503f"),
-        alt: "Sunglasses product photo used for an AI scene",
-        label: "AI scene",
-        overlay: "prompt",
+        src: "/ai-projects/usage-amount-shots/output.webp",
+        alt: "AI animation: a hand pressing a red can as the amount in the palm grows from a drop to a handful",
+        label: "Product in use · AI GIF",
+        animated: true,
       },
-      { src: u("1618005182384-a83a8bd57fbe"), alt: "Violet and blue abstract backdrop", label: "AI backdrops" },
-      { src: u("1596462502278-27bfdc403348"), alt: "Make-up products arranged as an ad visual", label: "Ad visual" },
       {
-        src: u("1572635196237-14b3f281503f"),
-        alt: "Sunglasses shown in several colour variations",
-        label: "Variations · 12 versions",
-        overlay: "variations",
+        src: "/ai-projects/usage-amount-shots/small.webp",
+        alt: "AI image: a small amount of product in a man's palm",
+        label: "Small amount",
+        focus: "50% 70%",
+      },
+      {
+        src: "/ai-projects/usage-amount-shots/large.webp",
+        alt: "AI image: a large amount of product in a man's palm",
+        label: "Large amount",
+        focus: "50% 70%",
+      },
+      {
+        src: "/ai-projects/usage-amount-shots/product.webp",
+        alt: "The client's product photo next to the three AI images made from it",
+        label: "1 product photo → 3 AI shots",
+        overlay: "set",
+        set: [
+          { src: "/ai-projects/usage-amount-shots/product.webp", label: "Product" },
+          { src: "/ai-projects/usage-amount-shots/small.webp", label: "Small" },
+          { src: "/ai-projects/usage-amount-shots/medium.webp", label: "Medium" },
+          { src: "/ai-projects/usage-amount-shots/large.webp", label: "Large" },
+        ],
       },
     ],
   },
@@ -283,13 +309,24 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
                 ))}
               </ul>
             </div>
-            <Link
-              href="#contact"
-              className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110 lg:self-auto"
-            >
-              {category.reach === "local" ? "Plan a shoot" : "Send us your images"}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-            </Link>
+            <div className="flex shrink-0 flex-wrap items-center gap-3">
+              {category.more && (
+                <Link
+                  href={category.more.href}
+                  className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-violet ring-1 ring-brand-violet/25 transition hover:ring-brand-violet/50"
+                >
+                  {category.more.label}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </Link>
+              )}
+              <Link
+                href="#contact"
+                className="group inline-flex items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110"
+              >
+                {category.reach === "local" ? "Plan a shoot" : "Send us your images"}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -309,8 +346,33 @@ function Frame({ tile, className, sizes }: { tile: Tile; className: string; size
           alt={alt}
           fill
           sizes={sizes}
+          unoptimized={tile.animated}
+          style={tile.focus ? { objectPosition: tile.focus } : undefined}
           className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
         />
+      )}
+
+      {overlay === "set" && tile.set && (
+        <div aria-hidden className="absolute inset-0 grid grid-cols-4 gap-1.5 bg-white p-1.5">
+          {tile.set.map((item, i) => (
+            <span
+              key={item.label}
+              className={`relative overflow-hidden rounded-2xl ${i === 0 ? "bg-paper ring-1 ring-ink/[0.06]" : ""}`}
+            >
+              <Image
+                src={item.src}
+                alt=""
+                fill
+                sizes="(min-width:1024px) 12vw, 25vw"
+                style={i === 0 ? undefined : { objectPosition: "50% 70%" }}
+                className={i === 0 ? "object-contain p-1" : "object-cover"}
+              />
+              <span className="absolute inset-x-1.5 top-1.5 truncate rounded-full bg-white/90 px-2 py-0.5 text-center text-[10px] font-semibold text-ink/70">
+                {item.label}
+              </span>
+            </span>
+          ))}
+        </div>
       )}
 
       {overlay === "play" && (
@@ -320,32 +382,6 @@ function Frame({ tile, className, sizes }: { tile: Tile; className: string; size
         >
           <Play className="ml-1 h-5 w-5 fill-current" />
         </span>
-      )}
-
-      {overlay === "prompt" && (
-        <div
-          aria-hidden
-          className="absolute inset-x-4 top-4 flex items-center gap-2.5 rounded-full bg-white/95 py-1.5 pr-1.5 pl-4 shadow-lg backdrop-blur"
-        >
-          <Sparkles className="h-4 w-4 shrink-0 text-brand-orchid" />
-          <span className="min-w-0 flex-1 truncate text-xs text-ink/70 sm:text-sm">
-            Sunglasses on a violet studio set, soft shadow
-          </span>
-          <span className="shrink-0 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-3.5 py-1.5 text-xs font-semibold text-white">
-            Generate
-          </span>
-        </div>
-      )}
-
-      {overlay === "variations" && (
-        <div aria-hidden className="absolute inset-0 grid grid-cols-4 gap-1.5 bg-white p-1.5">
-          {["", "bg-brand-violet/45", "bg-brand-orchid/45", "bg-[#6b7cff]/45"].map((tint) => (
-            <span key={tint || "original"} className="relative overflow-hidden rounded-2xl">
-              <Image src={src} alt="" fill sizes="(min-width:1024px) 12vw, 25vw" className="object-cover" />
-              {tint && <span className={`absolute inset-0 mix-blend-multiply ${tint}`} />}
-            </span>
-          ))}
-        </div>
       )}
 
       <figcaption

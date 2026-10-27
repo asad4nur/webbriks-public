@@ -33,8 +33,8 @@ export default function AiProjects() {
             </h2>
           </div>
           <p className="max-w-xl text-base leading-relaxed text-ink/60 sm:text-lg">
-            Real projects, start to finish: the instruction the client gave us,
-            the product and examples they sent, and the images we delivered.
+            Real projects, start to finish: the instruction the client gave us, the product and examples they sent, and
+            the images we delivered.
           </p>
         </div>
 
@@ -48,42 +48,20 @@ export default function AiProjects() {
   );
 }
 
-function ProjectCard({
-  project,
-  index,
-}: {
-  project: AiProject;
-  index: number;
-}) {
-  const {
-    title,
-    industry,
-    tags,
-    brief,
-    product,
-    reference,
-    showcase,
-    outputs,
-    approach,
-  } = project;
+function ProjectCard({ project, index }: { project: AiProject; index: number }) {
+  const { title, industry, tags, brief, product, reference, showcase, outputs, approach } = project;
 
   return (
     <li className="rounded-[2rem] bg-paper p-4 ring-1 ring-ink/[0.05] sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-1">
-        <span className="font-mono text-xs text-brand-violet">
-          Project {String(index + 1).padStart(2, "0")}
-        </span>
-        <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">
-          {title}
-        </h3>
+        <span className="font-mono text-xs text-brand-violet">Project {String(index + 1).padStart(2, "0")}</span>
+        <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h3>
         <ul className="flex flex-wrap gap-1.5 sm:ml-auto">
           {[industry, ...tags].map((tag, t) => (
             <li
               key={tag}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
-                t === 0
-                  ? "bg-tint-100 text-brand-violet"
-                  : "bg-white text-ink/60 ring-1 ring-ink/[0.06]"
+                t === 0 ? "bg-tint-100 text-brand-violet" : "bg-white text-ink/60 ring-1 ring-ink/[0.06]"
               }`}
             >
               {tag}
@@ -97,36 +75,21 @@ function ProjectCard({
         <div className="flex flex-col gap-4">
           <Step number={1} title="The brief">
             <figure className="relative rounded-2xl bg-paper p-5 pl-12">
-              <Quote
-                className="absolute top-5 left-4 h-5 w-5 text-brand-orchid"
-                aria-hidden
-              />
-              <blockquote className="text-[15px] leading-relaxed text-ink/80 sm:text-base">
-                {brief}
-              </blockquote>
-              <figcaption className="mt-3 text-xs text-ink/45">
-                Client&rsquo;s instruction, word for word
-              </figcaption>
+              <Quote className="absolute top-5 left-4 h-5 w-5 text-brand-orchid" aria-hidden />
+              <blockquote className="text-[15px] leading-relaxed text-ink/80 sm:text-base">{brief}</blockquote>
+              <figcaption className="mt-3 text-xs text-ink/45">Client&rsquo;s instruction, word for word</figcaption>
             </figure>
           </Step>
 
           <Step number={2} title="What the client sent">
             <div className="grid grid-cols-2 gap-3">
               <InputImage image={product} label="Their product" fit="contain" />
-              {reference && (
-                <InputImage
-                  image={reference}
-                  label="Example of the look"
-                  fit="cover"
-                />
-              )}
+              {reference && <InputImage image={reference} label="Example of the look" fit="cover" />}
             </div>
           </Step>
 
           <Step number={3} title="Our approach" grow>
-            <p className="text-sm leading-relaxed text-ink/65 sm:text-[15px]">
-              {approach}
-            </p>
+            <p className="text-sm leading-relaxed text-ink/65 sm:text-[15px]">{approach}</p>
           </Step>
         </div>
 
@@ -212,9 +175,7 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`rounded-3xl bg-white p-4 ring-1 ring-ink/[0.05] sm:p-5 ${grow ? "flex-1" : ""}`}
-    >
+    <div className={`rounded-3xl bg-white p-4 ring-1 ring-ink/[0.05] sm:p-5 ${grow ? "flex-1" : ""}`}>
       <h4 className="mb-4 flex items-center gap-2.5 px-1 text-sm font-semibold">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-tint-100 font-mono text-[11px] text-brand-violet">
           {number}
@@ -226,15 +187,7 @@ function Step({
   );
 }
 
-function InputImage({
-  image,
-  label,
-  fit,
-}: {
-  image: AiImage;
-  label: string;
-  fit: "contain" | "cover";
-}) {
+function InputImage({ image, label, fit }: { image: AiImage; label: string; fit: "contain" | "cover" }) {
   return (
     <figure>
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-paper ring-1 ring-ink/[0.05]">
@@ -246,9 +199,7 @@ function InputImage({
           className={fit === "contain" ? "object-contain p-2" : "object-cover"}
         />
       </div>
-      <figcaption className="mt-2 px-1 text-xs font-medium text-ink/55">
-        {label}
-      </figcaption>
+      <figcaption className="mt-2 px-1 text-xs font-medium text-ink/55">{label}</figcaption>
     </figure>
   );
 }

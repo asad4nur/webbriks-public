@@ -1,10 +1,11 @@
+import { aiProjects } from "@/lib/ai-projects";
 import { projects } from "@/lib/projects";
 import { reports } from "@/lib/reports";
 
 // Everything on /portfolio comes from here.
 //
-// REAL items: websites & stores (from Our Work) and Ads Manager reports (from Performance Marketing).
-// SAMPLE items (`sample: true`): Unsplash placeholders for photography, retouching, AI creatives and video.
+// REAL items: websites & stores (from Our Work), Ads Manager reports (from Performance Marketing) and AI projects
+// (from lib/ai-projects.ts). SAMPLE items (`sample: true`): Unsplash placeholders for video.
 // Their cards show a small "Sample" tag. To replace one: put your file in /public/portfolio/, change `image`
 // (and `before` / `video` where relevant), update the text and delete `sample: true`.
 
@@ -35,7 +36,15 @@ export type PortfolioItem = Base &
     | { kind: "report"; image: string; width: number; height: number }
     | { kind: "photo"; image: string; shape: "portrait" | "square" | "landscape" }
     | { kind: "beforeAfter"; image: string; before?: string }
-    | { kind: "ai"; image: string; prompt: string }
+    | {
+        kind: "ai";
+        /** Our result; `animated` for a GIF or animated WebP, which must play as it is. */
+        image: string;
+        animated?: boolean;
+        /** The client's own product photo and their instruction. */
+        product: string;
+        brief: string;
+      }
     | { kind: "video"; image: string; /** YouTube video id or a /public mp4 path. */ video?: string; length: string }
   );
 
@@ -163,28 +172,6 @@ const sampleItems: PortfolioItem[] = [
     before: "/portfolio/retouching/boot-before.webp",
   },
 
-  // AI creatives (SAMPLE)
-  {
-    id: "ai-1",
-    kind: "ai",
-    category: "ai",
-    sample: true,
-    title: "Sunglasses campaign",
-    subtitle: "4 scenes from 1 photo",
-    image: u("1572635196237-14b3f281503f"),
-    prompt: "Sunglasses on a violet studio set, soft shadow",
-  },
-  {
-    id: "ai-2",
-    kind: "ai",
-    category: "ai",
-    sample: true,
-    title: "Smart watch ads",
-    subtitle: "Feed, story and banner",
-    image: u("1523275335684-37898b6baf30"),
-    prompt: "Watch on a marble desk, morning light",
-  },
-
   // Video (SAMPLE: add `video` with a YouTube id or /portfolio/clip.mp4 to make it play)
   {
     id: "video-1",
@@ -218,8 +205,23 @@ const sampleItems: PortfolioItem[] = [
   },
 ];
 
+// One card per AI project, newest first. The full brief and inputs are on the AI creatives page.
+const aiItems: PortfolioItem[] = aiProjects.map((project) => ({
+  id: `ai-${project.slug}`,
+  kind: "ai",
+  category: "ai",
+  title: project.title,
+  subtitle: `${project.industry} · ${project.showcase.animated ? "AI GIF" : "AI images"}${
+    project.outputs?.length ? ` + ${project.outputs.length} stills` : ""
+  }`,
+  image: project.showcase.src,
+  animated: project.showcase.animated,
+  product: project.product.src,
+  brief: project.brief,
+}));
+
 // Order for the "All" view: alternate types so the grid feels varied.
-export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, sampleItems]);
+export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, aiItems, sampleItems]);
 
 function interleave<T>(lists: T[][]) {
   const out: T[] = [];
