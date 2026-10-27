@@ -14,19 +14,19 @@ type Office = {
   phone: (typeof site.phones)[number];
 };
 
-// Dhaka is pinned to the "Web Briks LLC" listing (maps.app.goo.gl/TJbsasNjJwGkWdTQA → 23.8040576, 90.3694224).
-// The other offices are located by address; add their exact pins here when available.
-const DHAKA_PIN = "23.8040576,90.3694224";
+// Offices are located by address. Dhaka uses Google's spelling of the area ("Nikunja 2") so the search finds it;
+// swap in the exact pin (lat,lng) once the Google listing shows the new office.
+const MAP_QUERIES: Record<string, string> = {
+  "Dhaka Office": "Road 4, Nikunja 2, Khilkhet, Dhaka",
+};
 
 const offices: Office[] = site.offices.map((office) => {
-  const isDhaka = office.city.startsWith("Dhaka");
+  const query = MAP_QUERIES[office.city] ?? office.address;
   return {
     name: office.city,
     address: office.address,
-    query: isDhaka ? DHAKA_PIN : office.address,
-    mapsUrl: isDhaka
-      ? "https://maps.app.goo.gl/TJbsasNjJwGkWdTQA"
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(office.address)}`,
+    query,
+    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`,
     phone: office.city.startsWith("USA") ? site.phones[1] : site.phones[0],
   };
 });

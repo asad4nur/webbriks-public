@@ -15,11 +15,7 @@ export const site = {
   },
   responseTime: "We reply within one business day.",
   offices: [
-    {
-      city: "Dhaka Office",
-      address:
-        "115 Senpara Parbata (3rd floor, Sheltech Rubynur), Begum Rokeya Avenue, Mirpur 10, Dhaka 1216, Bangladesh",
-    },
+    { city: "Dhaka Office", address: "House 35, 3rd Floor, Road 4, Nikunjo 2, Khilkhet, Dhaka, Bangladesh" },
     { city: "Gaibandha Office", address: "House 106, 17/1 ZigZag Road, Gaibandha 5700, Bangladesh" },
     { city: "USA Office", address: "1209 Mountain Road PL NE, STE A, Albuquerque, NM 87110, USA" },
   ],
