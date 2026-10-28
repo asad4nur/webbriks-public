@@ -247,16 +247,18 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
               <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
               {item.animated ? "AI GIF" : "AI generated"}
             </span>
-            <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur">
-              <span className="relative block h-11 w-11 overflow-hidden rounded-xl bg-paper">
-                <Image src={item.product} alt="" fill sizes="44px" className="object-contain" />
+            {item.product && (
+              <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur">
+                <span className="relative block h-11 w-11 overflow-hidden rounded-xl bg-paper">
+                  <Image src={item.product} alt="" fill sizes="44px" className="object-contain" />
+                </span>
+                <span className="text-[11px] leading-tight font-semibold text-ink/70">
+                  Made from the
+                  <br />
+                  client&rsquo;s product photo
+                </span>
               </span>
-              <span className="text-[11px] leading-tight font-semibold text-ink/70">
-                Made from the
-                <br />
-                client&rsquo;s product photo
-              </span>
-            </span>
+            )}
           </span>
         )}
 
@@ -276,6 +278,12 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             <span className="absolute right-3 bottom-3 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px] text-white">
               {item.length}
             </span>
+            {item.category === "ai" && (
+              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
+                AI video
+              </span>
+            )}
           </span>
         )}
 
@@ -390,7 +398,7 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
           <div className="relative aspect-[4/3] max-h-[75svh]">
             <BeforeAfter src={item.image} beforeSrc={item.before} alt={item.title} sizes="1152px" />
           </div>
-        ) : item.kind === "ai" ? (
+        ) : item.kind === "ai" && item.brief ? (
           <div className="grid bg-ink sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
             <Image
               src={item.image}

@@ -11,7 +11,7 @@ const strip = [
   { label: "Studio", image: "/portfolio/photography/cosmetics-fino.webp" },
   { label: "On-model", image: "/portfolio/photography/fashion-leather-jacket.webp" },
   { label: "Detail", image: "/portfolio/photography/jewelry-headband.webp" },
-  { label: "Reel", image: "/videos/professor-shoes.jpg", video: true },
+  { label: "Reel", image: "/videos/trenzo-wallet.jpg", video: true },
 ];
 
 export default function ShootHero() {

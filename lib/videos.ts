@@ -1,4 +1,5 @@
-// Webbriks' own videos, shown in the homepage "Video" tab and on /portfolio (Video).
+// Webbriks' own videos. Shot or animated ones show under "Video" (homepage tab and /portfolio); AI-made ones
+// (`ai: true`) show under "AI Creatives" instead, so AI work is never passed off as something we filmed.
 //
 // To add one: put the mp4 (H.264, 720p, a few MB per 10s) and a JPEG poster frame in /public/videos/,
 // then add an entry here. Newest first; the homepage shows them all in a scrollable row.
@@ -15,6 +16,8 @@ export type WebVideo = {
   src: string;
   poster: string;
   alt: string;
+  /** Generated with AI rather than filmed. */
+  ai?: boolean;
 };
 
 export const videos: WebVideo[] = [
@@ -31,27 +34,29 @@ export const videos: WebVideo[] = [
   {
     slug: "professor-shoes",
     title: "Professor",
-    type: "Product reel · Formal shoes",
+    type: "AI video · Formal shoes",
     shape: "portrait",
     length: "1:07",
     src: "/videos/professor-shoes.mp4",
     poster: "/videos/professor-shoes.jpg",
-    alt: "A man in a white shirt lacing black Professor formal shoes",
+    alt: "AI video: a man in a white shirt lacing black Professor formal shoes",
+    ai: true,
   },
   {
     slug: "true-sense-cgm",
     title: "True Sense Health",
-    type: "Product reel · CGM device",
+    type: "AI video · CGM device",
     shape: "portrait",
     length: "0:41",
     src: "/videos/true-sense-cgm.mp4",
     poster: "/videos/true-sense-cgm.jpg",
-    alt: "True Sense Health glucose monitor kit on a living-room table",
+    alt: "AI video: True Sense Health glucose monitor kit on a living-room table",
+    ai: true,
   },
   {
     slug: "trenzo-wallet",
     title: "Trenzo",
-    type: "Product reel · Leather wallet",
+    type: "Product reel · Shot by us",
     shape: "portrait",
     length: "0:29",
     src: "/videos/trenzo-wallet.mp4",

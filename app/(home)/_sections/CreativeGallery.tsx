@@ -30,16 +30,11 @@ type Category = {
   tags: string[];
   /** Extra link next to the main button, e.g. to the full project write-up. */
   more?: { label: string; href: string };
-} & (
-  | {
-      /** [large, small, small, wide] */
-      tiles: [Tile, Tile, Tile, Tile];
-    }
-  | {
-      /** A scrollable row of playable videos instead of the four tiles. */
-      videos: typeof videos;
-    }
-);
+  /** [large, small, small, wide] */
+  tiles?: [Tile, Tile, Tile, Tile];
+  /** Playable videos in a scrollable row, under the tiles when both are set. */
+  videos?: typeof videos;
+};
 
 const categories: Category[] = [
   {
@@ -114,8 +109,8 @@ const categories: Category[] = [
     name: "AI Creatives",
     reach: "global",
     description:
-      "Ad visuals, new scenes and variations made with AI, so you can test more ideas and find winners faster.",
-    tags: ["Ad visuals", "AI scenes", "Product in use", "GIFs", "Variations"],
+      "Ad visuals, product videos, new scenes and variations made with AI, so you can test more ideas and find winners faster.",
+    tags: ["Ad visuals", "AI scenes", "AI video", "Product in use", "GIFs"],
     more: { label: "See the client's brief", href: "/services/ai-creatives#ai-projects" },
     // Webbriks' own AI work (public/ai-projects). Details for each project live in lib/ai-projects.ts.
     tiles: [
@@ -126,16 +121,16 @@ const categories: Category[] = [
         animated: true,
       },
       {
-        src: "/ai-projects/usage-amount-shots/small.webp",
-        alt: "AI image: a small amount of product in a man's palm",
-        label: "Small amount",
-        focus: "50% 70%",
+        src: "/ai-projects/loafers/black-penny-loafer.webp",
+        alt: "AI image: black penny loafers on a seated man in a charcoal suit",
+        label: "Footwear · AI scene",
+        focus: "50% 72%",
       },
       {
-        src: "/ai-projects/usage-amount-shots/large.webp",
-        alt: "AI image: a large amount of product in a man's palm",
-        label: "Large amount",
-        focus: "50% 70%",
+        src: "/ai-projects/loafers/brown-penny-loafer.webp",
+        alt: "AI image: brown penny loafers with black socks and camel trousers",
+        label: "Footwear · on-model",
+        focus: "50% 60%",
       },
       {
         src: "/ai-projects/usage-amount-shots/product.webp",
@@ -150,6 +145,7 @@ const categories: Category[] = [
         ],
       },
     ],
+    videos: videos.filter((video) => video.ai),
   },
   {
     name: "Video",
@@ -157,8 +153,8 @@ const categories: Category[] = [
     description: "Reels, product videos and short ads, shot and edited for every platform and format.",
     tags: ["Reels", "Product videos", "Motion graphics", "9:16 · 1:1 · 16:9"],
     more: { label: "See all videos", href: "/portfolio" },
-    // Webbriks' own videos (lib/videos.ts); add new ones there.
-    videos,
+    // Webbriks' own videos (lib/videos.ts); add new ones there. AI-made ones show under AI Creatives.
+    videos: videos.filter((video) => !video.ai),
   },
 ];
 
@@ -263,9 +259,7 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
       <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${active}`} className="mt-5 sm:mt-6">
         {/* Keyed so the gallery eases in on every tab change */}
         <div key={active} className="animate-fade-up motion-reduce:animate-none">
-          {"videos" in category ? (
-            <VideoRow videos={category.videos} />
-          ) : (
+          {category.tiles && (
           <div className="grid gap-3 sm:gap-4 lg:h-[34rem] lg:grid-cols-2">
             <Frame
               tile={category.tiles[0]}
@@ -290,6 +284,11 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
               />
             </div>
           </div>
+          )}
+          {category.videos && (
+            <div className={category.tiles ? "mt-3 sm:mt-4" : undefined}>
+              <VideoRow videos={category.videos} size={category.tiles ? "md" : "lg"} />
+            </div>
           )}
 
           <div className="mt-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">

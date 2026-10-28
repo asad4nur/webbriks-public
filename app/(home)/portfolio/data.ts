@@ -42,9 +42,9 @@ export type PortfolioItem = Base &
         /** Our result; `animated` for a GIF or animated WebP, which must play as it is. */
         image: string;
         animated?: boolean;
-        /** The client's own product photo and their instruction. */
-        product: string;
-        brief: string;
+        /** The client's own product photo and their instruction, for client projects. */
+        product?: string;
+        brief?: string;
       }
     | {
         kind: "video";
@@ -182,11 +182,11 @@ const sampleItems: PortfolioItem[] = [
   },
 ];
 
-// One card per video, newest first (lib/videos.ts).
+// One card per video, newest first (lib/videos.ts). AI-made videos sit under AI Creatives.
 const videoItems: PortfolioItem[] = videos.map((v) => ({
   id: `video-${v.slug}`,
   kind: "video",
-  category: "video",
+  category: v.ai ? "ai" : "video",
   title: v.title,
   subtitle: `${v.type} · ${v.shape === "portrait" ? "9:16" : "16:9"}`,
   image: v.poster,
@@ -210,8 +210,28 @@ const aiItems: PortfolioItem[] = aiProjects.map((project) => ({
   brief: project.brief,
 }));
 
+// Our own AI images, made without a client brief (public/ai-projects/<slug>/).
+const aiStills: PortfolioItem[] = [
+  {
+    id: "ai-black-penny-loafer",
+    kind: "ai",
+    category: "ai",
+    title: "Black penny loafers",
+    subtitle: "Footwear · AI scene",
+    image: "/ai-projects/loafers/black-penny-loafer.webp",
+  },
+  {
+    id: "ai-brown-penny-loafer",
+    kind: "ai",
+    category: "ai",
+    title: "Brown penny loafers",
+    subtitle: "Footwear · On-model",
+    image: "/ai-projects/loafers/brown-penny-loafer.webp",
+  },
+];
+
 // Order for the "All" view: alternate types so the grid feels varied.
-export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, aiItems, videoItems, sampleItems]);
+export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, [...aiItems, ...aiStills], videoItems, sampleItems]);
 
 function interleave<T>(lists: T[][]) {
   const out: T[] = [];

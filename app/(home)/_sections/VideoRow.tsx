@@ -6,7 +6,7 @@ import type { WebVideo } from "@/lib/videos";
 
 // A scrollable row of videos (reels and 16:9 alike). Hovering a card plays a silent preview;
 // clicking opens it with sound in a player.
-export default function VideoRow({ videos }: { videos: WebVideo[] }) {
+export default function VideoRow({ videos, size = "lg" }: { videos: WebVideo[]; size?: "lg" | "md" }) {
   const [open, setOpen] = useState<WebVideo | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -19,7 +19,11 @@ export default function VideoRow({ videos }: { videos: WebVideo[] }) {
 
   return (
     <>
-      <ul className="-mx-4 flex h-[26rem] snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin] sm:mx-0 sm:h-[30rem] sm:scroll-px-0 sm:gap-4 sm:px-0 lg:h-[34rem]">
+      <ul
+        className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin] sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0 ${
+          size === "lg" ? "h-[26rem] sm:h-[30rem] lg:h-[34rem]" : "h-[22rem] sm:h-[26rem] lg:h-[28rem]"
+        }`}
+      >
         {videos.map((video) => (
           <li
             key={video.slug}
