@@ -1,16 +1,30 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight, Maximize2, Play, Sparkles, X } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Maximize2,
+  Play,
+  Sparkles,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FaMeta } from "react-icons/fa6";
 import BeforeAfter from "../../_sections/BeforeAfter";
-import { categories, type CategoryId, portfolio, type PortfolioItem, serviceFor } from "../data";
+import {
+  categories,
+  type CategoryId,
+  portfolio,
+  type PortfolioItem,
+  serviceFor,
+} from "../data";
 
 type Filter = "all" | CategoryId;
 
-const domain = (url?: string) => url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+const domain = (url?: string) =>
+  url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 export default function PortfolioGrid() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -21,10 +35,17 @@ export default function PortfolioGrid() {
   const tabs = [
     { id: "all" as const, label: "All work", count: portfolio.length },
     ...categories
-      .map(({ id, label }) => ({ id, label, count: portfolio.filter((item) => item.category === id).length }))
+      .map(({ id, label }) => ({
+        id,
+        label,
+        count: portfolio.filter((item) => item.category === id).length,
+      }))
       .filter((tab) => tab.count > 0),
   ];
-  const items = filter === "all" ? portfolio : portfolio.filter((item) => item.category === filter);
+  const items =
+    filter === "all"
+      ? portfolio
+      : portfolio.filter((item) => item.category === filter);
 
   useEffect(() => {
     const d = dialog.current;
@@ -87,7 +108,11 @@ export default function PortfolioGrid() {
         onClose={() => setOpen(null)}
         onClick={(e) => e.target === e.currentTarget && setOpen(null)}
         aria-label={open ? open.title : "Portfolio item"}
-        className="m-auto w-[min(72rem,calc(100vw-2rem))] max-w-none overflow-visible bg-transparent p-0 backdrop:bg-ink/80 backdrop:backdrop-blur-sm"
+        className={`m-auto max-w-none overflow-visible bg-transparent p-0 backdrop:bg-ink/80 backdrop:backdrop-blur-sm ${
+          open?.kind === "video" && open.shape === "portrait"
+            ? "w-[min(28rem,calc(100vw-2rem))]"
+            : "w-[min(72rem,calc(100vw-2rem))]"
+        }`}
       >
         {open && <Viewer item={open} onClose={() => setOpen(null)} />}
       </dialog>
@@ -107,7 +132,9 @@ function Card({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
 
       <div className="px-2.5 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] font-medium tracking-wider text-brand-violet uppercase">{label}</span>
+          <span className="font-mono text-[11px] font-medium tracking-wider text-brand-violet uppercase">
+            {label}
+          </span>
           {item.sample && (
             <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-semibold text-ink/45 ring-1 ring-ink/[0.06]">
               Sample
@@ -116,7 +143,12 @@ function Card({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
         </div>
         <h3 className="mt-1.5 text-lg font-semibold tracking-tight">
           {item.kind === "site" && item.url ? (
-            <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-brand-violet">
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand-violet"
+            >
               {item.title}
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
@@ -124,12 +156,17 @@ function Card({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             item.title
           )}
         </h3>
-        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ink/55">{item.subtitle}</p>
+        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ink/55">
+          {item.subtitle}
+        </p>
 
         {item.kind === "site" && item.tags.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {item.tags.map((tag) => (
-              <li key={tag} className="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink/60">
+              <li
+                key={tag}
+                className="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink/60"
+              >
                 {tag}
               </li>
             ))}
@@ -142,7 +179,10 @@ function Card({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             className="group/link inline-flex items-center gap-1.5 text-sm font-semibold text-brand-violet"
           >
             {service.label}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-0.5" aria-hidden />
+            <ArrowRight
+              className="h-4 w-4 transition-transform group-hover/link:translate-x-0.5"
+              aria-hidden
+            />
           </Link>
           {item.kind === "site" && item.url && (
             <a
@@ -184,106 +224,118 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
     "relative block w-full overflow-hidden rounded-2xl text-left focus-visible:ring-2 focus-visible:ring-brand-violet";
   const content = (
     <>
-        {item.kind === "site" && (
-          <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
-            <BrowserBar label={domain(item.url) ?? item.title} />
-            <span className="relative block aspect-[4/3]">
+      {item.kind === "site" && (
+        <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
+          <BrowserBar label={domain(item.url) ?? item.title} />
+          <span className="relative block aspect-[4/3]">
+            <Image
+              src={item.image}
+              alt=""
+              fill
+              sizes={sizes}
+              className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
+            />
+          </span>
+        </span>
+      )}
+
+      {item.kind === "report" && (
+        <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
+          <BrowserBar label="Ads Manager" meta />
+          <Image
+            src={item.image}
+            alt=""
+            width={item.width}
+            height={item.height}
+            sizes={sizes}
+            className="h-auto w-full"
+          />
+        </span>
+      )}
+
+      {item.kind === "photo" && (
+        <span
+          className={`relative block bg-tint-100 ${
+            item.shape === "portrait"
+              ? "aspect-[4/5]"
+              : item.shape === "square"
+                ? "aspect-square"
+                : "aspect-[4/3]"
+          }`}
+        >
+          <Image
+            src={item.image}
+            alt=""
+            fill
+            sizes={sizes}
+            className="object-cover transition duration-700 group-hover:scale-[1.04]"
+          />
+        </span>
+      )}
+
+      {item.kind === "ai" && (
+        <span className="relative block aspect-[4/5] bg-ink">
+          <Image
+            src={item.image}
+            alt=""
+            fill
+            unoptimized={item.animated}
+            sizes={sizes}
+            className="object-cover transition duration-700 group-hover:scale-[1.03]"
+          />
+          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+            <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
+            {item.animated ? "AI GIF" : "AI generated"}
+          </span>
+          <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur">
+            <span className="relative block h-11 w-11 overflow-hidden rounded-xl bg-paper">
               <Image
-                src={item.image}
+                src={item.product}
                 alt=""
                 fill
-                sizes={sizes}
-                className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
+                sizes="44px"
+                className="object-contain"
               />
             </span>
-          </span>
-        )}
-
-        {item.kind === "report" && (
-          <span className="block overflow-hidden rounded-2xl bg-white ring-1 ring-ink/[0.07]">
-            <BrowserBar label="Ads Manager" meta />
-            <Image
-              src={item.image}
-              alt=""
-              width={item.width}
-              height={item.height}
-              sizes={sizes}
-              className="h-auto w-full"
-            />
-          </span>
-        )}
-
-        {item.kind === "photo" && (
-          <span
-            className={`relative block bg-tint-100 ${
-              item.shape === "portrait" ? "aspect-[4/5]" : item.shape === "square" ? "aspect-square" : "aspect-[4/3]"
-            }`}
-          >
-            <Image
-              src={item.image}
-              alt=""
-              fill
-              sizes={sizes}
-              className="object-cover transition duration-700 group-hover:scale-[1.04]"
-            />
-          </span>
-        )}
-
-        {item.kind === "ai" && (
-          <span className="relative block aspect-[4/5] bg-ink">
-            <Image
-              src={item.image}
-              alt=""
-              fill
-              unoptimized={item.animated}
-              sizes={sizes}
-              className="object-cover transition duration-700 group-hover:scale-[1.03]"
-            />
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
-              {item.animated ? "AI GIF" : "AI generated"}
-            </span>
-            <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur">
-              <span className="relative block h-11 w-11 overflow-hidden rounded-xl bg-paper">
-                <Image src={item.product} alt="" fill sizes="44px" className="object-contain" />
-              </span>
-              <span className="text-[11px] leading-tight font-semibold text-ink/70">
-                Made from the
-                <br />
-                client&rsquo;s product photo
-              </span>
+            <span className="text-[11px] leading-tight font-semibold text-ink/70">
+              Made from the
+              <br />
+              client&rsquo;s product photo
             </span>
           </span>
-        )}
+        </span>
+      )}
 
-        {item.kind === "video" && (
-          <span className="relative block aspect-video bg-ink">
-            <Image
-              src={item.image}
-              alt=""
-              fill
-              sizes={sizes}
-              className="object-cover opacity-90 transition duration-700 group-hover:scale-[1.04]"
-            />
-            <span className="absolute inset-0 bg-linear-to-t from-ink/60 to-transparent" />
-            <span className="absolute top-1/2 left-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/50 backdrop-blur-md transition duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-brand-violet">
-              <Play className="ml-1 h-5 w-5 fill-current" aria-hidden />
-            </span>
-            <span className="absolute right-3 bottom-3 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px] text-white">
-              {item.length}
-            </span>
+      {item.kind === "video" && (
+        <span
+          className={`relative block bg-ink ${item.shape === "portrait" ? "aspect-[4/5]" : "aspect-video"}`}
+        >
+          <Image
+            src={item.image}
+            alt=""
+            fill
+            sizes={sizes}
+            className="object-cover opacity-90 transition duration-700 group-hover:scale-[1.04]"
+          />
+          <span className="absolute inset-0 bg-linear-to-t from-ink/60 to-transparent" />
+          <span className="absolute top-1/2 left-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/50 backdrop-blur-md transition duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-brand-violet">
+            <Play className="ml-1 h-5 w-5 fill-current" aria-hidden />
           </span>
-        )}
+          <span className="absolute right-3 bottom-3 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px] text-white">
+            {item.length}
+          </span>
+        </span>
+      )}
 
-        {item.kind !== "video" && (
-          <span className="pointer-events-none absolute top-3 right-3 flex h-8 w-8 scale-90 items-center justify-center rounded-full bg-white/90 text-brand-violet opacity-0 shadow transition group-hover:scale-100 group-hover:opacity-100">
-            {item.kind === "site" && item.url ? (
-              <ArrowUpRight className="h-4 w-4" aria-hidden />
-            ) : (
-              <Maximize2 className="h-4 w-4" aria-hidden />
-            )}
-          </span>
-        )}
+      {item.kind !== "video" && (
+        <span className="pointer-events-none absolute top-3 right-3 flex h-8 w-8 scale-90 items-center justify-center rounded-full bg-white/90 text-brand-violet opacity-0 shadow transition group-hover:scale-100 group-hover:opacity-100">
+          {item.kind === "site" && item.url ? (
+            <ArrowUpRight className="h-4 w-4" aria-hidden />
+          ) : (
+            <Maximize2 className="h-4 w-4" aria-hidden />
+          )}
+        </span>
+      )}
     </>
   );
 
@@ -299,13 +351,24 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
       {content}
     </a>
   ) : (
-    <button type="button" onClick={onOpen} aria-label={`View ${item.title} larger`} className={className}>
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`View ${item.title} larger`}
+      className={className}
+    >
       {content}
     </button>
   );
 }
 
-function BrowserBar({ label, meta = false }: { label: string; meta?: boolean }) {
+function BrowserBar({
+  label,
+  meta = false,
+}: {
+  label: string;
+  meta?: boolean;
+}) {
   return (
     <span className="flex items-center gap-1.5 border-b border-ink/[0.06] bg-paper px-3 py-2">
       <span className="h-2 w-2 rounded-full bg-ink/15" />
@@ -325,7 +388,13 @@ function BrowserBar({ label, meta = false }: { label: string; meta?: boolean }) 
 
 // --- Viewer --------------------------------------------------------------------------------------
 
-function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void }) {
+function Viewer({
+  item,
+  onClose,
+}: {
+  item: PortfolioItem;
+  onClose: () => void;
+}) {
   const service = item.service ?? serviceFor[item.category];
 
   return (
@@ -335,7 +404,9 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
           <span className="font-semibold">{item.title}</span>
           <span className="text-white/60"> · {item.subtitle}</span>
           {item.sample && (
-            <span className="ml-2 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold">Sample</span>
+            <span className="ml-2 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold">
+              Sample
+            </span>
           )}
         </p>
         <button
@@ -349,7 +420,9 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div
+        className={`overflow-hidden rounded-2xl shadow-2xl ${item.kind === "video" ? "bg-ink" : "bg-white"}`}
+      >
         {item.kind === "video" ? (
           item.video ? (
             /^[\w-]{11}$/.test(item.video) ? (
@@ -361,19 +434,42 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
                 className="block aspect-video w-full"
               />
             ) : (
-              <video src={item.video} controls autoPlay playsInline className="block aspect-video w-full bg-ink" />
+              <video
+                src={item.video}
+                poster={item.image}
+                controls
+                autoPlay
+                playsInline
+                className={
+                  item.shape === "portrait"
+                    ? "mx-auto block aspect-[9/16] max-h-[78svh] w-auto max-w-full bg-ink"
+                    : "block aspect-video w-full bg-ink"
+                }
+              />
             )
           ) : (
             <div className="relative aspect-video bg-ink">
-              <Image src={item.image} alt="" fill sizes="1152px" className="object-cover opacity-60" />
+              <Image
+                src={item.image}
+                alt=""
+                fill
+                sizes="1152px"
+                className="object-cover opacity-60"
+              />
               <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold text-white">
-                Sample cover. The real video will play here once it&rsquo;s added.
+                Sample cover. The real video will play here once it&rsquo;s
+                added.
               </p>
             </div>
           )
         ) : item.kind === "beforeAfter" ? (
           <div className="relative aspect-[4/3] max-h-[75svh]">
-            <BeforeAfter src={item.image} beforeSrc={item.before} alt={item.title} sizes="1152px" />
+            <BeforeAfter
+              src={item.image}
+              beforeSrc={item.before}
+              alt={item.title}
+              sizes="1152px"
+            />
           </div>
         ) : item.kind === "ai" ? (
           <div className="grid bg-ink sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
@@ -387,15 +483,22 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
               className="h-auto max-h-[70svh] w-full object-contain"
             />
             <div className="flex flex-col justify-center gap-4 p-6 text-white sm:p-8">
-              <p className="text-xs font-semibold tracking-wider text-white/50 uppercase">The client&rsquo;s brief</p>
-              <blockquote className="text-base leading-relaxed text-white/85">&ldquo;{item.brief}&rdquo;</blockquote>
+              <p className="text-xs font-semibold tracking-wider text-white/50 uppercase">
+                The client&rsquo;s brief
+              </p>
+              <blockquote className="text-base leading-relaxed text-white/85">
+                &ldquo;{item.brief}&rdquo;
+              </blockquote>
               <Link
                 href="/services/ai-creatives#ai-projects"
                 onClick={onClose}
                 className="group inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand-orchid hover:text-white"
               >
                 See what they sent and how we made it
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                <ArrowRight
+                  className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </Link>
             </div>
           </div>
@@ -418,7 +521,10 @@ function Viewer({ item, onClose }: { item: PortfolioItem; onClose: () => void })
           className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-violet transition hover:bg-tint-50"
         >
           {service.label}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          <ArrowRight
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
         </Link>
         {item.kind === "site" && item.url && (
           <a

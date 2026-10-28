@@ -1,11 +1,12 @@
 import { aiProjects } from "@/lib/ai-projects";
 import { projects } from "@/lib/projects";
 import { reports } from "@/lib/reports";
+import { videos } from "@/lib/videos";
 
 // Everything on /portfolio comes from here.
 //
-// REAL items: websites & stores (from Our Work), Ads Manager reports (from Performance Marketing) and AI projects
-// (from lib/ai-projects.ts). SAMPLE items (`sample: true`): Unsplash placeholders for video.
+// REAL items: websites & stores (from Our Work), Ads Manager reports (from Performance Marketing), AI projects
+// (from lib/ai-projects.ts) and videos (from lib/videos.ts). SAMPLE items (`sample: true`): Unsplash placeholders.
 // Their cards show a small "Sample" tag. To replace one: put your file in /public/portfolio/, change `image`
 // (and `before` / `video` where relevant), update the text and delete `sample: true`.
 
@@ -34,7 +35,11 @@ export type PortfolioItem = Base &
   (
     | { kind: "site"; image: string; url?: string; tags: string[] }
     | { kind: "report"; image: string; width: number; height: number }
-    | { kind: "photo"; image: string; shape: "portrait" | "square" | "landscape" }
+    | {
+        kind: "photo";
+        image: string;
+        shape: "portrait" | "square" | "landscape";
+      }
     | { kind: "beforeAfter"; image: string; before?: string }
     | {
         kind: "ai";
@@ -45,17 +50,40 @@ export type PortfolioItem = Base &
         product: string;
         brief: string;
       }
-    | { kind: "video"; image: string; /** YouTube video id or a /public mp4 path. */ video?: string; length: string }
+    | {
+        kind: "video";
+        image: string;
+        /** YouTube video id or a /public mp4 path. */
+        video?: string;
+        length: string;
+        /** Vertical reels (9:16) get a tall card and player. */
+        shape?: "portrait" | "landscape";
+      }
   );
 
 /** Where each category sends people who want the same for their business. */
 export const serviceFor: Record<CategoryId, { label: string; href: string }> = {
-  websites: { label: "Get a website like this", href: "/services/web-design-development" },
-  ads: { label: "Get results like this", href: "/services/performance-marketing" },
-  photography: { label: "Book a shoot", href: "/services/product-photography-video" },
-  retouching: { label: "Get your photos edited", href: "/services/photo-editing-retouching" },
+  websites: {
+    label: "Get a website like this",
+    href: "/services/web-design-development",
+  },
+  ads: {
+    label: "Get results like this",
+    href: "/services/performance-marketing",
+  },
+  photography: {
+    label: "Book a shoot",
+    href: "/services/product-photography-video",
+  },
+  retouching: {
+    label: "Get your photos edited",
+    href: "/services/photo-editing-retouching",
+  },
   ai: { label: "Get AI creatives", href: "/services/ai-creatives" },
-  video: { label: "Get videos like this", href: "/services/product-photography-video" },
+  video: {
+    label: "Get videos like this",
+    href: "/services/product-photography-video",
+  },
 };
 
 const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&q=80`;
@@ -65,7 +93,10 @@ const siteItems: PortfolioItem[] = projects.map((project) => ({
   kind: "site",
   category: "websites",
   service: project.tags.includes("Ecommerce")
-    ? { label: "Build a store like this", href: "/services/end-to-end-ecommerce" }
+    ? {
+        label: "Build a store like this",
+        href: "/services/end-to-end-ecommerce",
+      }
     : undefined,
   title: project.name,
   subtitle: project.description,
@@ -171,39 +202,20 @@ const sampleItems: PortfolioItem[] = [
     image: "/portfolio/retouching/boot-after.webp",
     before: "/portfolio/retouching/boot-before.webp",
   },
-
-  // Video (SAMPLE: add `video` with a YouTube id or /portfolio/clip.mp4 to make it play)
-  {
-    id: "video-1",
-    kind: "video",
-    category: "video",
-    sample: true,
-    title: "Headphones reel",
-    subtitle: "Reel · 9:16",
-    length: "0:15",
-    image: u("1505740420928-5e560c06d30e"),
-  },
-  {
-    id: "video-2",
-    kind: "video",
-    category: "video",
-    sample: true,
-    title: "Behind the scenes",
-    subtitle: "Product shoot · 16:9",
-    length: "0:45",
-    image: u("1516035069371-29a1b244cc32"),
-  },
-  {
-    id: "video-3",
-    kind: "video",
-    category: "video",
-    sample: true,
-    title: "Brand film",
-    subtitle: "Launch video · 16:9",
-    length: "1:10",
-    image: u("1535016120720-40c646be5580"),
-  },
 ];
+
+// One card per video, newest first (lib/videos.ts).
+const videoItems: PortfolioItem[] = videos.map((v) => ({
+  id: `video-${v.slug}`,
+  kind: "video",
+  category: "video",
+  title: v.title,
+  subtitle: `${v.type} · ${v.shape === "portrait" ? "9:16" : "16:9"}`,
+  image: v.poster,
+  video: v.src,
+  length: v.length,
+  shape: v.shape,
+}));
 
 // One card per AI project, newest first. The full brief and inputs are on the AI creatives page.
 const aiItems: PortfolioItem[] = aiProjects.map((project) => ({
@@ -221,7 +233,13 @@ const aiItems: PortfolioItem[] = aiProjects.map((project) => ({
 }));
 
 // Order for the "All" view: alternate types so the grid feels varied.
-export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, aiItems, sampleItems]);
+export const portfolio: PortfolioItem[] = interleave([
+  siteItems,
+  reportItems,
+  aiItems,
+  videoItems,
+  sampleItems,
+]);
 
 function interleave<T>(lists: T[][]) {
   const out: T[] = [];

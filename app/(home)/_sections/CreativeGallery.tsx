@@ -3,11 +3,16 @@
 import { ArrowRight, Globe, MapPin, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  useId,
+  useRef,
+  useState,
+} from "react";
+import { videos } from "@/lib/videos";
 import BeforeAfter from "./BeforeAfter";
-
-// Placeholder product photos from Unsplash. Swap for Webbriks' own work when ready.
-const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&q=80`;
+import VideoRow from "./VideoRow";
 
 type Reach = "local" | "global";
 type Tile = {
@@ -31,15 +36,23 @@ type Category = {
   tags: string[];
   /** Extra link next to the main button, e.g. to the full project write-up. */
   more?: { label: string; href: string };
-  /** [large, small, small, wide] */
-  tiles: [Tile, Tile, Tile, Tile];
-};
+} & (
+  | {
+      /** [large, small, small, wide] */
+      tiles: [Tile, Tile, Tile, Tile];
+    }
+  | {
+      /** A scrollable row of playable videos instead of the four tiles. */
+      videos: typeof videos;
+    }
+);
 
 const categories: Category[] = [
   {
     name: "Photography",
     reach: "local",
-    description: "Studio and on-location shoots that show your products, and the people who use them, at their best.",
+    description:
+      "Studio and on-location shoots that show your products, and the people who use them, at their best.",
     tags: ["Studio", "Lifestyle", "On-model", "Flat lay"],
     tiles: [
       // Webbriks' own shoots (public/portfolio/photography).
@@ -70,7 +83,12 @@ const categories: Category[] = [
     reach: "global",
     description:
       "Background removal, colour correction and clean-up, so every image looks consistent and marketplace-ready.",
-    tags: ["Background removal", "Colour correction", "Clipping path", "Ghost mannequin"],
+    tags: [
+      "Background removal",
+      "Colour correction",
+      "Clipping path",
+      "Ghost mannequin",
+    ],
     // Webbriks' own retouching work (public/portfolio/retouching), each a real before/after pair.
     // Placed by shape: near-4:3 photos in the large and small tiles, the wide sunglasses shot in the wide one.
     tiles: [
@@ -110,7 +128,10 @@ const categories: Category[] = [
     description:
       "Ad visuals, new scenes and variations made with AI, so you can test more ideas and find winners faster.",
     tags: ["Ad visuals", "AI scenes", "Product in use", "GIFs", "Variations"],
-    more: { label: "See the client's brief", href: "/services/ai-creatives#ai-projects" },
+    more: {
+      label: "See the client's brief",
+      href: "/services/ai-creatives#ai-projects",
+    },
     // Webbriks' own AI work (public/ai-projects). Details for each project live in lib/ai-projects.ts.
     tiles: [
       {
@@ -137,9 +158,15 @@ const categories: Category[] = [
         label: "1 product photo → 3 AI shots",
         overlay: "set",
         set: [
-          { src: "/ai-projects/usage-amount-shots/product.webp", label: "Product" },
+          {
+            src: "/ai-projects/usage-amount-shots/product.webp",
+            label: "Product",
+          },
           { src: "/ai-projects/usage-amount-shots/small.webp", label: "Small" },
-          { src: "/ai-projects/usage-amount-shots/medium.webp", label: "Medium" },
+          {
+            src: "/ai-projects/usage-amount-shots/medium.webp",
+            label: "Medium",
+          },
           { src: "/ai-projects/usage-amount-shots/large.webp", label: "Large" },
         ],
       },
@@ -148,24 +175,12 @@ const categories: Category[] = [
   {
     name: "Video",
     reach: "local",
-    description: "Reels, product videos and short ads, shot and edited for every platform and format.",
-    tags: ["Reels", "Product videos", "Unboxing", "9:16 · 1:1 · 16:9"],
-    tiles: [
-      {
-        src: u("1505740420928-5e560c06d30e"),
-        alt: "Headphones on yellow, framed as a vertical reel",
-        label: "Reel · 9:16",
-        overlay: "play",
-      },
-      { src: u("1516035069371-29a1b244cc32"), alt: "Camera and lenses on a dark table", label: "Behind the scenes" },
-      { src: u("1535016120720-40c646be5580"), alt: "Projector beam in a dark room", label: "Brand film" },
-      {
-        src: u("1574717024653-61fd2cf4d44d"),
-        alt: "Video editing timeline",
-        label: "Product video · 15s cut",
-        overlay: "play",
-      },
-    ],
+    description:
+      "Reels, product videos and short ads, shot and edited for every platform and format.",
+    tags: ["Reels", "Product videos", "Motion graphics", "9:16 · 1:1 · 16:9"],
+    more: { label: "See all videos", href: "/portfolio" },
+    // Webbriks' own videos (lib/videos.ts); add new ones there.
+    videos,
   },
 ];
 
@@ -227,7 +242,9 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
                 tabIndex={i === active ? 0 : -1}
                 onClick={() => setActive(i)}
                 className={`flex-1 rounded-full px-2.5 py-2.5 text-xs font-semibold whitespace-nowrap transition duration-300 sm:px-5 sm:text-sm ${
-                  i === active ? "bg-ink text-white shadow-md" : "text-ink/60 hover:text-brand-violet"
+                  i === active
+                    ? "bg-ink text-white shadow-md"
+                    : "text-ink/60 hover:text-brand-violet"
                 }`}
               >
                 {name}
@@ -260,44 +277,59 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
                 {badge}
               </span>
               <p className="text-sm text-ink/65">
-                <strong className="font-semibold text-ink">{title}</strong> {text}
+                <strong className="font-semibold text-ink">{title}</strong>{" "}
+                {text}
               </p>
             </div>
           );
         })}
       </div>
 
-      <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${active}`} className="mt-5 sm:mt-6">
+      <div
+        id={`${id}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${id}-tab-${active}`}
+        className="mt-5 sm:mt-6"
+      >
         {/* Keyed so the gallery eases in on every tab change */}
-        <div key={active} className="animate-fade-up motion-reduce:animate-none">
-          <div className="grid gap-3 sm:gap-4 lg:h-[34rem] lg:grid-cols-2">
-            <Frame
-              tile={category.tiles[0]}
-              className="h-96 sm:h-[28rem] lg:h-full"
-              sizes="(min-width:1024px) 45vw, 100vw"
-            />
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-rows-2">
+        <div
+          key={active}
+          className="animate-fade-up motion-reduce:animate-none"
+        >
+          {"videos" in category ? (
+            <VideoRow videos={category.videos} />
+          ) : (
+            <div className="grid gap-3 sm:gap-4 lg:h-[34rem] lg:grid-cols-2">
               <Frame
-                tile={category.tiles[1]}
-                className="h-44 sm:h-60 lg:h-full"
-                sizes="(min-width:1024px) 22vw, 50vw"
-              />
-              <Frame
-                tile={category.tiles[2]}
-                className="h-44 sm:h-60 lg:h-full"
-                sizes="(min-width:1024px) 22vw, 50vw"
-              />
-              <Frame
-                tile={category.tiles[3]}
-                className="col-span-2 h-56 sm:h-64 lg:h-full"
+                tile={category.tiles[0]}
+                className="h-96 sm:h-[28rem] lg:h-full"
                 sizes="(min-width:1024px) 45vw, 100vw"
               />
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-rows-2">
+                <Frame
+                  tile={category.tiles[1]}
+                  className="h-44 sm:h-60 lg:h-full"
+                  sizes="(min-width:1024px) 22vw, 50vw"
+                />
+                <Frame
+                  tile={category.tiles[2]}
+                  className="h-44 sm:h-60 lg:h-full"
+                  sizes="(min-width:1024px) 22vw, 50vw"
+                />
+                <Frame
+                  tile={category.tiles[3]}
+                  className="col-span-2 h-56 sm:h-64 lg:h-full"
+                  sizes="(min-width:1024px) 45vw, 100vw"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-base leading-relaxed text-ink/65">{category.description}</p>
+              <p className="text-base leading-relaxed text-ink/65">
+                {category.description}
+              </p>
               <ul className="mt-3 flex flex-wrap gap-1.5">
                 {category.tags.map((tag) => (
                   <li
@@ -316,15 +348,23 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
                   className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-violet ring-1 ring-brand-violet/25 transition hover:ring-brand-violet/50"
                 >
                   {category.more.label}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
                 </Link>
               )}
               <Link
                 href="#contact"
                 className="group inline-flex items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110"
               >
-                {category.reach === "local" ? "Plan a shoot" : "Send us your images"}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                {category.reach === "local"
+                  ? "Plan a shoot"
+                  : "Send us your images"}
+                <ArrowRight
+                  className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </Link>
             </div>
           </div>
@@ -334,12 +374,27 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
   );
 }
 
-function Frame({ tile, className, sizes }: { tile: Tile; className: string; sizes: string }) {
+function Frame({
+  tile,
+  className,
+  sizes,
+}: {
+  tile: Tile;
+  className: string;
+  sizes: string;
+}) {
   const { src, alt, label, overlay } = tile;
   return (
-    <figure className={`group relative overflow-hidden rounded-3xl bg-tint-100 ${className}`}>
+    <figure
+      className={`group relative overflow-hidden rounded-3xl bg-tint-100 ${className}`}
+    >
       {overlay === "compare" ? (
-        <BeforeAfter src={src} beforeSrc={tile.before} alt={alt} sizes={sizes} />
+        <BeforeAfter
+          src={src}
+          beforeSrc={tile.before}
+          alt={alt}
+          sizes={sizes}
+        />
       ) : (
         <Image
           src={src}
@@ -353,7 +408,10 @@ function Frame({ tile, className, sizes }: { tile: Tile; className: string; size
       )}
 
       {overlay === "set" && tile.set && (
-        <div aria-hidden className="absolute inset-0 grid grid-cols-4 gap-1.5 bg-white p-1.5">
+        <div
+          aria-hidden
+          className="absolute inset-0 grid grid-cols-4 gap-1.5 bg-white p-1.5"
+        >
           {tile.set.map((item, i) => (
             <span
               key={item.label}
@@ -386,7 +444,9 @@ function Frame({ tile, className, sizes }: { tile: Tile; className: string; size
 
       <figcaption
         className={`absolute rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-ink shadow-sm backdrop-blur ${
-          overlay === "compare" ? "bottom-4 left-1/2 -translate-x-1/2" : "bottom-4 left-4"
+          overlay === "compare"
+            ? "bottom-4 left-1/2 -translate-x-1/2"
+            : "bottom-4 left-4"
         }`}
       >
         {label}
