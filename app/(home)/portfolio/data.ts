@@ -35,11 +35,7 @@ export type PortfolioItem = Base &
   (
     | { kind: "site"; image: string; url?: string; tags: string[] }
     | { kind: "report"; image: string; width: number; height: number }
-    | {
-        kind: "photo";
-        image: string;
-        shape: "portrait" | "square" | "landscape";
-      }
+    | { kind: "photo"; image: string; shape: "portrait" | "square" | "landscape" }
     | { kind: "beforeAfter"; image: string; before?: string }
     | {
         kind: "ai";
@@ -63,27 +59,12 @@ export type PortfolioItem = Base &
 
 /** Where each category sends people who want the same for their business. */
 export const serviceFor: Record<CategoryId, { label: string; href: string }> = {
-  websites: {
-    label: "Get a website like this",
-    href: "/services/web-design-development",
-  },
-  ads: {
-    label: "Get results like this",
-    href: "/services/performance-marketing",
-  },
-  photography: {
-    label: "Book a shoot",
-    href: "/services/product-photography-video",
-  },
-  retouching: {
-    label: "Get your photos edited",
-    href: "/services/photo-editing-retouching",
-  },
+  websites: { label: "Get a website like this", href: "/services/web-design-development" },
+  ads: { label: "Get results like this", href: "/services/performance-marketing" },
+  photography: { label: "Book a shoot", href: "/services/product-photography-video" },
+  retouching: { label: "Get your photos edited", href: "/services/photo-editing-retouching" },
   ai: { label: "Get AI creatives", href: "/services/ai-creatives" },
-  video: {
-    label: "Get videos like this",
-    href: "/services/product-photography-video",
-  },
+  video: { label: "Get videos like this", href: "/services/product-photography-video" },
 };
 
 const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&q=80`;
@@ -93,10 +74,7 @@ const siteItems: PortfolioItem[] = projects.map((project) => ({
   kind: "site",
   category: "websites",
   service: project.tags.includes("Ecommerce")
-    ? {
-        label: "Build a store like this",
-        href: "/services/end-to-end-ecommerce",
-      }
+    ? { label: "Build a store like this", href: "/services/end-to-end-ecommerce" }
     : undefined,
   title: project.name,
   subtitle: project.description,
@@ -233,13 +211,7 @@ const aiItems: PortfolioItem[] = aiProjects.map((project) => ({
 }));
 
 // Order for the "All" view: alternate types so the grid feels varied.
-export const portfolio: PortfolioItem[] = interleave([
-  siteItems,
-  reportItems,
-  aiItems,
-  videoItems,
-  sampleItems,
-]);
+export const portfolio: PortfolioItem[] = interleave([siteItems, reportItems, aiItems, videoItems, sampleItems]);
 
 function interleave<T>(lists: T[][]) {
   const out: T[] = [];

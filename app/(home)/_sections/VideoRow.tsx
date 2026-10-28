@@ -41,9 +41,7 @@ export default function VideoRow({ videos }: { videos: WebVideo[] }) {
         onClick={(e) => e.target === e.currentTarget && setOpen(null)}
         aria-label={open ? open.title : "Video"}
         className={`m-auto max-w-none overflow-visible bg-transparent p-0 backdrop:bg-ink/80 backdrop:backdrop-blur-sm ${
-          open?.shape === "portrait"
-            ? "w-[min(28rem,calc(100vw-2rem))]"
-            : "w-[min(72rem,calc(100vw-2rem))]"
+          open?.shape === "portrait" ? "w-[min(28rem,calc(100vw-2rem))]" : "w-[min(72rem,calc(100vw-2rem))]"
         }`}
       >
         {open && (
@@ -91,9 +89,7 @@ function Card({ video, onOpen }: { video: WebVideo; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      onPointerEnter={(e) =>
-        e.pointerType === "mouse" && preview.current?.play().catch(() => {})
-      }
+      onPointerEnter={(e) => e.pointerType === "mouse" && preview.current?.play().catch(() => {})}
       onPointerLeave={() => preview.current?.pause()}
       aria-label={`Play ${video.title} (${video.length})`}
       className="group relative block h-full w-full overflow-hidden rounded-3xl bg-ink text-left focus-visible:ring-2 focus-visible:ring-brand-violet"
@@ -118,16 +114,10 @@ function Card({ video, onOpen }: { video: WebVideo; onOpen: () => void }) {
       </span>
       <span className="absolute right-4 bottom-4 left-4 flex items-end justify-between gap-3 text-white">
         <span className="min-w-0">
-          <span className="block truncate text-base font-semibold">
-            {video.title}
-          </span>
-          <span className="block truncate text-xs text-white/70">
-            {video.type}
-          </span>
+          <span className="block truncate text-base font-semibold">{video.title}</span>
+          <span className="block truncate text-xs text-white/70">{video.type}</span>
         </span>
-        <span className="shrink-0 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px]">
-          {video.length}
-        </span>
+        <span className="shrink-0 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[11px]">{video.length}</span>
       </span>
     </button>
   );
