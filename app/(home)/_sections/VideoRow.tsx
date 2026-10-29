@@ -1,13 +1,26 @@
 "use client";
 
-import { Play, X } from "lucide-react";
+import { Play, Sparkles, X } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { WebVideo } from "@/lib/videos";
 
-// A scrollable row of videos (reels and 16:9 alike). Hovering a card plays a silent preview;
-// clicking opens it with sound in a player.
-export default function VideoRow({ videos, size = "lg" }: { videos: WebVideo[]; size?: "lg" | "md" }) {
-  const [open, setOpen] = useState<WebVideo | null>(null);
+/** A still shown in the row before the videos (4:5 card), e.g. an AI image. */
+export type RowImage = { src: string; alt: string; title: string; type: string; width: number; height: number };
+
+// A scrollable row of videos (reels and 16:9 alike), optionally led by still images. Hovering a video plays a
+// silent preview; clicking opens it with sound in a player (stills open larger).
+export default function VideoRow({
+  videos,
+  images = [],
+  size = "lg",
+}: {
+  videos: WebVideo[];
+  images?: RowImage[];
+  size?: "lg" | "md";
+}) {
+  const [open, setOpen] = useState<WebVideo | RowImage | null>(null);
+  const openVideo = open && "poster" in open ? open : null;
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -24,6 +37,33 @@ export default function VideoRow({ videos, size = "lg" }: { videos: WebVideo[]; 
           size === "lg" ? "h-[26rem] sm:h-[30rem] lg:h-[34rem]" : "h-[22rem] sm:h-[26rem] lg:h-[28rem]"
         }`}
       >
+        {images.map((image) => (
+          <li key={image.src} className="aspect-[4/5] h-full shrink-0 snap-start">
+            <button
+              type="button"
+              onClick={() => setOpen(image)}
+              aria-label={`View ${image.title} larger`}
+              className="group relative block h-full w-full overflow-hidden rounded-3xl bg-tint-100 text-left focus-visible:ring-2 focus-visible:ring-brand-violet"
+            >
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                sizes="(min-width:1024px) 28rem, 70vw"
+                className="object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
+              />
+              <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-brand-orchid" aria-hidden />
+                AI generated
+              </span>
+              <span className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-ink/60 to-transparent" />
+              <span className="absolute right-4 bottom-4 left-4 text-white">
+                <span className="block truncate text-base font-semibold">{image.title}</span>
+                <span className="block truncate text-xs text-white/75">{image.type}</span>
+              </span>
+            </button>
+          </li>
+        ))}
         {videos.map((video) => (
           <li
             key={video.slug}
@@ -43,9 +83,9 @@ export default function VideoRow({ videos, size = "lg" }: { videos: WebVideo[]; 
         ref={dialog}
         onClose={() => setOpen(null)}
         onClick={(e) => e.target === e.currentTarget && setOpen(null)}
-        aria-label={open ? open.title : "Video"}
+        aria-label={open ? open.title : "Media"}
         className={`m-auto max-w-none overflow-visible bg-transparent p-0 backdrop:bg-ink/80 backdrop:backdrop-blur-sm ${
-          open?.shape === "portrait" ? "w-[min(28rem,calc(100vw-2rem))]" : "w-[min(72rem,calc(100vw-2rem))]"
+          openVideo?.shape === "landscape" ? "w-[min(72rem,calc(100vw-2rem))]" : "w-[min(28rem,calc(100vw-2rem))]"
         }`}
       >
         {open && (
@@ -66,18 +106,31 @@ export default function VideoRow({ videos, size = "lg" }: { videos: WebVideo[]; 
               </button>
             </div>
             <div className="overflow-hidden rounded-2xl bg-ink shadow-2xl">
-              <video
-                src={open.src}
-                poster={open.poster}
-                controls
-                autoPlay
-                playsInline
-                className={
-                  open.shape === "portrait"
-                    ? "mx-auto block aspect-[9/16] max-h-[80svh] w-auto max-w-full"
-                    : "block aspect-video w-full"
-                }
-              />
+              {openVideo ? (
+                <video
+                  src={openVideo.src}
+                  poster={openVideo.poster}
+                  controls
+                  autoPlay
+                  playsInline
+                  className={
+                    openVideo.shape === "portrait"
+                      ? "mx-auto block aspect-[9/16] max-h-[80svh] w-auto max-w-full"
+                      : "block aspect-video w-full"
+                  }
+                />
+              ) : (
+                "width" in open && (
+                  <Image
+                    src={open.src}
+                    alt={open.alt}
+                    width={open.width}
+                    height={open.height}
+                    sizes="28rem"
+                    className="mx-auto block h-auto max-h-[80svh] w-auto max-w-full"
+                  />
+                )
+              )}
             </div>
           </div>
         )}

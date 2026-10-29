@@ -6,7 +6,7 @@ import Link from "next/link";
 import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from "react";
 import { videos } from "@/lib/videos";
 import BeforeAfter from "./BeforeAfter";
-import VideoRow from "./VideoRow";
+import VideoRow, { type RowImage } from "./VideoRow";
 
 type Reach = "local" | "global";
 type Tile = {
@@ -34,6 +34,8 @@ type Category = {
   tiles?: [Tile, Tile, Tile, Tile];
   /** Playable videos in a scrollable row, under the tiles when both are set. */
   videos?: typeof videos;
+  /** Still images that lead the video row. */
+  images?: RowImage[];
 };
 
 const categories: Category[] = [
@@ -111,38 +113,24 @@ const categories: Category[] = [
     description:
       "Ad visuals, product videos, new scenes and variations made with AI, so you can test more ideas and find winners faster.",
     tags: ["Ad visuals", "AI scenes", "AI video", "Product in use", "GIFs"],
-    more: { label: "See the client's brief", href: "/services/ai-creatives#ai-projects" },
-    // Webbriks' own AI work (public/ai-projects). Details for each project live in lib/ai-projects.ts.
-    tiles: [
-      {
-        src: "/ai-projects/usage-amount-shots/output.webp",
-        alt: "AI animation: a hand pressing a red can as the amount in the palm grows from a drop to a handful",
-        label: "Product in use · AI GIF",
-        animated: true,
-      },
+    more: { label: "See all AI work", href: "/portfolio" },
+    // Webbriks' own AI work: stills in public/ai-projects/, AI videos from lib/videos.ts (`ai: true`).
+    images: [
       {
         src: "/ai-projects/loafers/black-penny-loafer.webp",
         alt: "AI image: black penny loafers on a seated man in a charcoal suit",
-        label: "Footwear · AI scene",
-        focus: "50% 72%",
+        title: "Black penny loafers",
+        type: "Footwear · AI scene",
+        width: 1122,
+        height: 1402,
       },
       {
         src: "/ai-projects/loafers/brown-penny-loafer.webp",
         alt: "AI image: brown penny loafers with black socks and camel trousers",
-        label: "Footwear · on-model",
-        focus: "50% 60%",
-      },
-      {
-        src: "/ai-projects/usage-amount-shots/product.webp",
-        alt: "The client's product photo next to the three AI images made from it",
-        label: "1 product photo → 3 AI shots",
-        overlay: "set",
-        set: [
-          { src: "/ai-projects/usage-amount-shots/product.webp", label: "Product" },
-          { src: "/ai-projects/usage-amount-shots/small.webp", label: "Small" },
-          { src: "/ai-projects/usage-amount-shots/medium.webp", label: "Medium" },
-          { src: "/ai-projects/usage-amount-shots/large.webp", label: "Large" },
-        ],
+        title: "Brown penny loafers",
+        type: "Footwear · On-model",
+        width: 1122,
+        height: 1402,
       },
     ],
     videos: videos.filter((video) => video.ai),
@@ -287,7 +275,7 @@ export default function CreativeGallery({ heading }: { heading: ReactNode }) {
           )}
           {category.videos && (
             <div className={category.tiles ? "mt-3 sm:mt-4" : undefined}>
-              <VideoRow videos={category.videos} size={category.tiles ? "md" : "lg"} />
+              <VideoRow videos={category.videos} images={category.images} size={category.tiles ? "md" : "lg"} />
             </div>
           )}
 

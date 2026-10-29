@@ -4,7 +4,9 @@ import Image from "next/image";
 import { type AiImage, type AiProject, aiProjects } from "@/lib/ai-projects";
 
 // Real client projects, each told left to right: the brief → what they sent → what we delivered.
+// Hidden until lib/ai-projects.ts has at least one.
 export default function AiProjects() {
+  if (aiProjects.length === 0) return null;
   return (
     <section
       id="ai-projects"
