@@ -69,8 +69,8 @@ export default function TicketStatus({ token }: { token: string }) {
   const count = state.kind === "ready" ? state.messages.length : 0;
 
   // A short-lived link for one file of this ticket (the bucket is private; the server only signs this ticket's files).
-  const resolve = useCallback(async (key: string) => {
-    const res = await fetch(api(token, `/view-url?fileKey=${encodeURIComponent(key)}`), { cache: "no-store" });
+  const resolve = useCallback(async (key: string, download?: boolean) => {
+    const res = await fetch(api(token, `/view-url?fileKey=${encodeURIComponent(key)}${download ? "&download=1" : ""}`), { cache: "no-store" });
     const data = await res.json().catch(() => null);
     return res.ok && data?.success ? (data.data.viewUrl as string) : null;
   }, [token]);
@@ -210,7 +210,8 @@ export default function TicketStatus({ token }: { token: string }) {
   const { ticket, messages } = state;
   const step = STEP_OF[ticket.status];
   const done = step === 3;
-  const closed = ticket.status === "closed";
+  // A resolved or closed ticket is finished: the customer can read it but not write to it.
+  const closed = ticket.status === "closed" || ticket.status === "resolved";
   const working = ticket.status === "in_progress";
 
   return (
@@ -299,7 +300,10 @@ export default function TicketStatus({ token }: { token: string }) {
 
         <div className="shrink-0 border-t border-brand-violet/[0.08] bg-white p-3.5 sm:p-4">
           {closed ? (
-            <p className="py-1 text-center text-sm text-ink/55">This ticket is closed, so new messages can&apos;t be added.</p>
+            <p className="flex items-center justify-center gap-2 py-1 text-center text-sm text-ink/55">
+              <Lock className="h-4 w-4 shrink-0" aria-hidden />
+              This ticket is {ticket.status}, so new messages can&apos;t be added. If you still need help, please start a new ticket.
+            </p>
           ) : (
             <form onSubmit={send}>
               <StagedFiles items={files} onRemove={removeFile} />

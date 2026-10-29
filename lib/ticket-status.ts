@@ -27,7 +27,7 @@ export const TICKET_DETAIL: Record<TicketState, string> = {
   open: "Someone from the team will pick it up soon.",
   in_progress: "You don't need to do anything right now. We'll email you as soon as there's news.",
   pending_client: "We asked you something. Reply below so we can carry on.",
-  resolved: "We think this is sorted. If something is still wrong, reply below and we'll reopen it.",
+  resolved: "We think this is sorted, so this ticket is now closed to new messages. If something is still wrong, start a new ticket from the chat on our website.",
   closed: "This ticket is closed. If you still need help, start a new ticket from the chat on our website.",
 };
 

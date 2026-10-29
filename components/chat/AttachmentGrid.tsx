@@ -6,7 +6,20 @@ import { useEffect, useState } from "react";
 import { displayFileName, extractS3Key, fileKind, isImageUrl, signedViewUrl } from "@/lib/chat/attachments";
 
 /** Asks the server for a short-lived link to one private file (by its S3 key). */
-export type ResolveKey = (key: string) => Promise<string | null>;
+export type ResolveKey = (key: string, download?: boolean) => Promise<string | null>;
+
+/** Saves a file: the server's download link makes the browser keep it under the sender's file name. */
+async function saveFile(url: string, resolve: ResolveKey) {
+  const key = extractS3Key(url);
+  const href = key ? await signedViewUrl(key, resolve, true) : url;
+  if (!href) return;
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = displayFileName(url);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
 type Resolved = { state: "loading" } | { state: "ready"; href: string } | { state: "error" };
 
@@ -75,7 +88,23 @@ function FileCard({ url, resolve, tone }: { url: string; resolve: ResolveKey; to
         <span className="block truncate text-[13px] font-medium">{displayFileName(url)}</span>
         <span className={`block text-[11px] ${tone === "mine" ? "text-white/70" : "text-ink/50"}`}>{kind.label}</span>
       </span>
-      {r.state === "ready" ? <Download className="h-4 w-4 shrink-0 opacity-70" aria-hidden /> : <Loader2 className="h-4 w-4 shrink-0 animate-spin opacity-70 motion-reduce:animate-none" aria-hidden />}
+      {r.state === "ready" ? (
+        <button
+          type="button"
+          aria-label={`Download ${displayFileName(url)}`}
+          title="Download"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void saveFile(url, resolve);
+          }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full opacity-80 transition-opacity hover:bg-black/10 hover:opacity-100"
+        >
+          <Download className="h-4 w-4" aria-hidden />
+        </button>
+      ) : (
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin opacity-70 motion-reduce:animate-none" aria-hidden />
+      )}
     </>
   );
   const style = `flex w-full items-center gap-3 rounded-xl p-2 transition-colors ${tone === "mine" ? "bg-white/15 text-white hover:bg-white/25" : "bg-tint-50 text-ink ring-1 ring-brand-violet/10 hover:bg-tint-100"}`;
@@ -111,9 +140,9 @@ function Lightbox({ urls, index, resolve, onClose, onIndex }: { urls: string[]; 
         </p>
         <div className="flex shrink-0 items-center gap-2">
           {r.state === "ready" && (
-            <a href={r.href} target="_blank" rel="noopener noreferrer" download aria-label="Download" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
+            <button type="button" onClick={() => void saveFile(url, resolve)} aria-label="Download" title="Download" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
               <Download className="h-4 w-4" aria-hidden />
-            </a>
+            </button>
           )}
           <button type="button" onClick={onClose} aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
             <X className="h-4 w-4" aria-hidden />

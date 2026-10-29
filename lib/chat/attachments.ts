@@ -44,20 +44,24 @@ const SIGNED_TTL = 10 * 60 * 1000; // the links last 15 minutes: reuse for 10, t
 const signedCache = new Map<string, { url: string; at: number }>();
 const signedPending = new Map<string, Promise<string | null>>();
 
-/** A view link for a private file, remembered so a thumbnail, its lightbox and a re-render share one request. */
-export function signedViewUrl(key: string, load: (key: string) => Promise<string | null>): Promise<string | null> {
-  const hit = signedCache.get(key);
+/**
+ * A view link for a private file (or, with `download`, a link that saves it under its real name), remembered so a
+ * thumbnail, its viewer and a re-render share one request.
+ */
+export function signedViewUrl(key: string, load: (key: string, download?: boolean) => Promise<string | null>, download = false): Promise<string | null> {
+  const id = `${download ? "dl:" : ""}${key}`;
+  const hit = signedCache.get(id);
   if (hit && Date.now() - hit.at < SIGNED_TTL) return Promise.resolve(hit.url);
-  const inflight = signedPending.get(key);
+  const inflight = signedPending.get(id);
   if (inflight) return inflight;
-  const request = load(key)
+  const request = load(key, download)
     .then((url) => {
-      if (url) signedCache.set(key, { url, at: Date.now() });
+      if (url) signedCache.set(id, { url, at: Date.now() });
       return url;
     })
     .catch(() => null)
-    .finally(() => signedPending.delete(key));
-  signedPending.set(key, request);
+    .finally(() => signedPending.delete(id));
+  signedPending.set(id, request);
   return request;
 }
 

@@ -1,18 +1,23 @@
 "use client";
 
 import {
+  AlertCircle,
   ArrowLeft,
+  Ban,
   CalendarCheck,
   Headphones,
   Headset,
   Loader2,
   Mail,
   MessageCircle,
+  MoreVertical,
   Paperclip,
+  Pencil,
   RotateCcw,
   Send,
   Sparkles,
   Ticket,
+  Trash2,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -138,6 +143,9 @@ export default function ChatWidget() {
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [fileError, setFileError] = useState("");
   const [showEarlier, setShowEarlier] = useState(false);
+  // The "⋯" menu of one of the visitor's own messages, and the inline edit box.
+  const [menu, setMenu] = useState<{ id: string; confirm: boolean } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
@@ -273,9 +281,9 @@ export default function ChatWidget() {
   // A short-lived link for a private file in this chat (the bucket is private).
   const liveToken = live.token;
   const resolveLive = useCallback(
-    async (key: string) => {
+    async (key: string, download?: boolean) => {
       if (!liveToken) return null;
-      const res = await fetch(`${API_URL}/api/support/attachments/view-url?fileKey=${encodeURIComponent(key)}`, {
+      const res = await fetch(`${API_URL}/api/support/attachments/view-url?fileKey=${encodeURIComponent(key)}${download ? "&download=1" : ""}`, {
         headers: { Authorization: `Bearer ${liveToken}` },
       });
       const data = await res.json().catch(() => null);
@@ -351,6 +359,7 @@ export default function ChatWidget() {
   });
   // The visitor has one conversation for good. When the team resolved it and they came back, what came before stays
   // one tap away instead of greeting them with old files.
+  const latestTicketLink = [...live.messages].reverse().map((m) => (m.senderModel === "System" ? parseTicketLink(m.content)?.url : undefined)).find(Boolean);
   const earlierCount = lastResolved >= 0 && lastResolved < live.messages.length - 1 ? lastResolved + 1 : 0;
   const showSuggestions = phase === "idle" && !thinking && messages.length === 1 && messages[0].id.startsWith("welcome");
 
@@ -680,19 +689,132 @@ export default function ChatWidget() {
                       </div>
                     );
 
+                  const deleted = !!msg.deletedAt;
+                  const isLocal = msg._id.startsWith("local-");
+                  const canAct = mine && !deleted && !msg.status && !isLocal && !live.ended && !live.locked;
+                  const canEdit = canAct && !!msg.content;
+                  const isEditing = editing?.id === msg._id;
+                  const nearEnd = i >= live.messages.length - 2;
+
                   return (
                     <div key={msg._id} className={`flex animate-chat-in gap-2 ${first ? "mt-3" : "mt-1"} ${mine ? "justify-end" : "justify-start"}`}>
                       {!mine && (first ? <AgentAvatar name={msg.senderName} /> : <div className="w-8 shrink-0" aria-hidden />)}
                       <div className="max-w-[82%]">
                         {!mine && first && <p className="mb-1 ml-1 text-[11px] font-medium text-ink/55">{msg.senderName}</p>}
-                        <div className={`rounded-[1.25rem] text-sm leading-relaxed ${mediaOnly ? "p-1" : "px-4 py-2.5"} ${mine ? bubbleOut : `rounded-tl-md bg-white text-ink ${shadowCard}`}`}>
-                          {msg.content && <span className={`block break-words whitespace-pre-wrap ${hasMedia ? "mb-2" : ""}`}>{msg.content}</span>}
-                          {hasMedia && <AttachmentGrid urls={msg.attachments ?? []} resolve={resolveLive} tone={mine ? "mine" : "theirs"} />}
+                        <div className="group relative">
+                          {canAct && !isEditing && (
+                            <div className="absolute top-1/2 -left-9 -translate-y-1/2">
+                              <button
+                                type="button"
+                                aria-label="Message options"
+                                aria-haspopup="menu"
+                                aria-expanded={menu?.id === msg._id}
+                                onClick={() => setMenu(menu?.id === msg._id ? null : { id: msg._id, confirm: false })}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-ink/45 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-ink/5 hover:text-ink focus-visible:opacity-100 aria-expanded:opacity-100 [@media(hover:none)]:opacity-100"
+                              >
+                                <MoreVertical className="h-4 w-4" aria-hidden />
+                              </button>
+                              {menu?.id === msg._id && (
+                                <>
+                                  <div className="fixed inset-0 z-10" onClick={() => setMenu(null)} aria-hidden />
+                                  <div role="menu" className={`absolute left-0 z-20 w-40 rounded-xl bg-white p-1 text-sm shadow-[0_14px_30px_-12px_rgba(7,4,26,0.35)] ring-1 ring-ink/10 ${nearEnd ? "bottom-8" : "top-8"}`}>
+                                    {menu.confirm ? (
+                                      <div className="p-2">
+                                        <p className="mb-2 text-xs text-ink/70">Delete this message for everyone?</p>
+                                        <div className="flex gap-1.5">
+                                          <button type="button" onClick={() => { live.deleteMessage(msg._id); setMenu(null); }} className="flex-1 rounded-lg bg-red-600 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
+                                            Delete
+                                          </button>
+                                          <button type="button" onClick={() => setMenu(null)} className="flex-1 rounded-lg bg-ink/5 py-1.5 text-xs font-medium hover:bg-ink/10">
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        {canEdit && (
+                                          <button type="button" role="menuitem" onClick={() => { setEditing({ id: msg._id, text: msg.content }); setMenu(null); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-tint-50">
+                                            <Pencil className="h-3.5 w-3.5" aria-hidden /> Edit
+                                          </button>
+                                        )}
+                                        <button type="button" role="menuitem" onClick={() => setMenu({ id: msg._id, confirm: true })} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-red-600 hover:bg-red-50">
+                                          <Trash2 className="h-3.5 w-3.5" aria-hidden /> Delete
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          <div
+                            className={`rounded-[1.25rem] text-sm leading-relaxed ${mediaOnly && !deleted && !isEditing ? "p-1" : "px-4 py-2.5"} ${mine ? bubbleOut : `rounded-tl-md bg-white text-ink ${shadowCard}`} ${msg.status === "sending" ? "opacity-70" : ""} ${msg.status === "failed" ? "ring-2 ring-red-400" : ""}`}
+                          >
+                            {deleted ? (
+                              <span className="flex items-center gap-1.5 italic opacity-75">
+                                <Ban className="h-3.5 w-3.5" aria-hidden /> This message was deleted
+                              </span>
+                            ) : isEditing ? (
+                              <div className="min-w-48 space-y-2">
+                                <textarea
+                                  autoFocus
+                                  value={editing.text}
+                                  onChange={(e) => setEditing({ id: msg._id, text: e.target.value })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      live.editMessage(msg._id, editing.text);
+                                      setEditing(null);
+                                    }
+                                    if (e.key === "Escape") setEditing(null);
+                                  }}
+                                  rows={2}
+                                  aria-label="Edit message"
+                                  className="w-full resize-none rounded-lg bg-white p-2 text-sm text-ink outline-none"
+                                />
+                                <div className="flex justify-end gap-1.5">
+                                  <button type="button" onClick={() => setEditing(null)} className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium hover:bg-white/30">
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={!editing.text.trim()}
+                                    onClick={() => { live.editMessage(msg._id, editing.text); setEditing(null); }}
+                                    className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-violet disabled:opacity-50"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {msg.content && <span className={`block break-words whitespace-pre-wrap ${hasMedia ? "mb-2" : ""}`}>{msg.content}</span>}
+                                {hasMedia && <AttachmentGrid urls={msg.attachments ?? []} resolve={resolveLive} tone={mine ? "mine" : "theirs"} />}
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <p className={`mt-1 text-[10px] text-ink/45 tabular-nums ${mine ? "mr-1 text-right" : "ml-1"}`}>
-                          {time}
-                          {mine && i === lastOwn && live.agentSeen && <span className="ml-1 font-medium text-brand-violet">· Seen</span>}
-                        </p>
+                        {msg.status === "failed" ? (
+                          <p className="mt-1 mr-1 flex items-center justify-end gap-2 text-[11px] font-medium text-red-600">
+                            <AlertCircle className="h-3 w-3" aria-hidden /> Didn&apos;t send
+                            <button type="button" onClick={() => live.resend(msg._id)} className="flex items-center gap-1 underline underline-offset-2">
+                              <RotateCcw className="h-3 w-3" aria-hidden /> Resend
+                            </button>
+                            <button type="button" onClick={() => live.discard(msg._id)} className="text-ink/50 underline underline-offset-2">
+                              Discard
+                            </button>
+                          </p>
+                        ) : (
+                          <p className={`mt-1 text-[10px] text-ink/45 tabular-nums ${mine ? "mr-1 text-right" : "ml-1"}`}>
+                            {msg.status === "sending" ? "Sending…" : (
+                              <>
+                                {msg.editedAt && !deleted && "Edited · "}
+                                {time}
+                                {mine && i === lastOwn && live.agentSeen && !deleted && <span className="ml-1 font-medium text-brand-violet">· Seen</span>}
+                              </>
+                            )}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
@@ -716,10 +838,22 @@ export default function ChatWidget() {
                 ) : (
                   <form onSubmit={sendLive}>
                     <input ref={fileRef} type="file" multiple accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,.docx,.xlsx,.txt" className="hidden" onChange={onFiles} />
-                    <StagedFiles items={staged} onRemove={removeStaged} />
-                    {fileError && <p role="alert" className="mb-1.5 px-1 text-xs text-red-600">{fileError}</p>}
-                    <div className={composer}>
-                      <button type="button" onClick={() => fileRef.current?.click()} disabled={staged.length >= MAX_STAGED} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
+                    {live.locked ? (
+                      <div className="mb-2 flex items-center gap-2.5 rounded-xl bg-tint-50 px-3 py-2.5 text-xs text-ink/70 ring-1 ring-brand-violet/10">
+                        <Ticket className="h-4 w-4 shrink-0 text-brand-violet" aria-hidden />
+                        <span className="min-w-0 flex-1">A ticket was opened for this chat. Continue the conversation in your ticket.</span>
+                        {latestTicketLink && (
+                          <a href={latestTicketLink} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full bg-brand-violet px-3 py-1.5 font-semibold text-white hover:brightness-110">
+                            Open ticket
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <StagedFiles items={staged} onRemove={removeStaged} />
+                    )}
+                    {(live.notice || fileError) && <p role="alert" className="mb-1.5 px-1 text-xs text-red-600">{live.notice || fileError}</p>}
+                    <div className={`${composer} ${live.locked ? "pointer-events-none opacity-50" : ""}`}>
+                      <button type="button" onClick={() => fileRef.current?.click()} disabled={live.locked || staged.length >= MAX_STAGED} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
                         <Paperclip className="h-4 w-4" aria-hidden />
                       </button>
                       <textarea
@@ -736,12 +870,13 @@ export default function ChatWidget() {
                             sendLive();
                           }
                         }}
-                        placeholder="Write a message…"
+                        placeholder={live.locked ? "This chat is read-only" : "Write a message…"}
                         aria-label="Message"
+                        disabled={live.locked}
                         rows={1}
                         className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-1.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink/40"
                       />
-                      <button type="submit" disabled={(!liveInput.trim() && !staged.some((f) => f.status === "done")) || staged.some((f) => f.status === "uploading")} aria-label="Send" className={sendButton}>
+                      <button type="submit" disabled={live.locked || (!liveInput.trim() && !staged.some((f) => f.status === "done")) || staged.some((f) => f.status === "uploading")} aria-label="Send" className={sendButton}>
                         <Send className="h-4 w-4 -translate-x-px translate-y-px" aria-hidden />
                       </button>
                     </div>
