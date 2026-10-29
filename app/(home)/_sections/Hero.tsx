@@ -61,7 +61,7 @@ export default function Hero() {
 
         <div className="mt-[clamp(1.25rem,3.5svh,2.25rem)] flex w-full animate-fade-up justify-center gap-2 [animation-delay:300ms] sm:w-auto sm:gap-3">
           <Link
-            href="#contact"
+            href="/book-consultation"
             className="group inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110 sm:px-7 sm:py-3.5"
           >
             <span>

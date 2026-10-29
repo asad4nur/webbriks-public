@@ -94,7 +94,7 @@ export default function OurWorkingProcess() {
         <div className="mt-14 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center lg:mt-20">
           <p className="text-sm text-ink/60">Step one is free, and there&rsquo;s no obligation.</p>
           <Link
-            href="#contact"
+            href="/book-consultation"
             className="group inline-flex items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110"
           >
             Book a free consultation

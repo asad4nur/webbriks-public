@@ -89,7 +89,7 @@ export default function About() {
 
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link
-              href="#contact"
+              href="/book-consultation"
               className="group inline-flex items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)] transition hover:brightness-110"
             >
               Get a free consultation

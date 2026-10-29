@@ -1,5 +1,6 @@
 import { site } from "@/lib/site";
-import { Check, Mail, Phone } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, Mail, Phone } from "lucide-react";
+import Link from "next/link";
 import ContactForm from "./ContactForm";
 
 // Promises taken from the contact area on webbriks.com.
@@ -47,6 +48,15 @@ export default function Contact() {
               <ContactRow key={phone.href} icon={Phone} label={`Call ${phone.label}`} value={phone.display} href={phone.href} />
             ))}
           </div>
+
+          <Link
+            href="/book-consultation"
+            className="group mt-6 inline-flex items-center gap-2 rounded-full bg-tint-100 px-5 py-3 text-sm font-semibold text-brand-violet transition hover:bg-tint-200"
+          >
+            <CalendarCheck className="h-4 w-4" aria-hidden />
+            Prefer to talk first? Book a free consultation
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
         </div>
 
         {/* Right: form */}

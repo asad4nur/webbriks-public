@@ -97,6 +97,24 @@ const reportItems: PortfolioItem[] = reports.map((report, i) => ({
 const sampleItems: PortfolioItem[] = [
   // Photography: Webbriks' own shoots, then one SAMPLE
   {
+    id: "photo-trenzo-angle",
+    kind: "photo",
+    category: "photography",
+    shape: "square",
+    title: "Trenzo card wallet",
+    subtitle: "Leather goods · Studio, white background",
+    image: "/portfolio/photography/trenzo-wallet-angle.jpg",
+  },
+  {
+    id: "photo-trenzo-front",
+    kind: "photo",
+    category: "photography",
+    shape: "square",
+    title: "Trenzo card wallet, back",
+    subtitle: "Leather goods · E-commerce cut-out",
+    image: "/portfolio/photography/trenzo-wallet-front.jpg",
+  },
+  {
     id: "photo-1",
     kind: "photo",
     category: "photography",

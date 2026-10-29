@@ -401,7 +401,7 @@ export default function Navbar() {
         </ul>
 
         <Link
-          href="/contact"
+          href="/book-consultation"
           className="group hidden items-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-[0_8px_24px_-10px_rgba(83,20,214,0.6)] transition hover:brightness-110 md:mr-3 md:ml-auto md:inline-flex lg:mx-0"
         >
           Book a Call
@@ -625,7 +625,7 @@ export default function Navbar() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
               </Link>
               <Link
-                href="/contact"
+                href="/book-consultation"
                 onClick={() => setMenu(null)}
                 className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/30 transition hover:bg-white/10"
               >
@@ -904,7 +904,7 @@ export default function Navbar() {
           {/* Pinned footer: main action + quick contact */}
           <div className="border-t border-ink/[0.06] bg-white/80 px-8 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur">
             <Link
-              href="/contact"
+              href="/book-consultation"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-5 py-3.5 text-sm font-semibold text-white shadow-[0_10px_28px_-10px_rgba(83,20,214,0.55)]"
             >

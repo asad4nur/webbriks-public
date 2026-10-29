@@ -24,7 +24,7 @@ export default function CTA() {
 
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="#contact"
+            href="/book-consultation"
             className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-brand-violet shadow-[0_12px_30px_-12px_rgba(7,4,26,0.5)] transition hover:bg-tint-50"
           >
             Book a free consultation

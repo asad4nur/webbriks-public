@@ -43,7 +43,7 @@ const categories: Category[] = [
     name: "Photography",
     reach: "local",
     description: "Studio and on-location shoots that show your products, and the people who use them, at their best.",
-    tags: ["Studio", "Lifestyle", "On-model", "Flat lay"],
+    tags: ["Studio", "Lifestyle", "On-model", "Flat lay", "White background"],
     tiles: [
       // Webbriks' own shoots (public/portfolio/photography).
       {
@@ -57,9 +57,9 @@ const categories: Category[] = [
         label: "Jewelry · macro",
       },
       {
-        src: "/portfolio/photography/cosmetics-fino.webp",
-        alt: "Fino hair mask jar on a wet branch with red flowers, pink backdrop",
-        label: "Cosmetics · studio",
+        src: "/portfolio/photography/trenzo-wallet-angle.jpg",
+        alt: "Trenzo green leather card wallet with a zip pocket, shot at an angle on white",
+        label: "Leather goods · studio",
       },
       {
         src: "/portfolio/photography/apparel-flat-lay.webp",

@@ -4,11 +4,10 @@ import Link from "next/link";
 
 const proof = ["Studio & on-location shoots", "Photos and video in one booking", "Edited and ready to post"];
 
-// Illustration only. Photos are Unsplash placeholders (same as the Creatives section); swap for real shoots.
-const u = (id: string) => `https://images.unsplash.com/photo-${id}?w=800&q=80`;
-const hero = u("1598300042247-d088f8ab3a91");
+// Webbriks' own shoots (public/portfolio/photography and the reel poster in public/videos).
+const hero = "/portfolio/photography/trenzo-wallet-angle.jpg";
 const strip = [
-  { label: "Studio", image: "/portfolio/photography/cosmetics-fino.webp" },
+  { label: "Studio", image: "/portfolio/photography/trenzo-wallet-front.jpg" },
   { label: "On-model", image: "/portfolio/photography/fashion-leather-jacket.webp" },
   { label: "Detail", image: "/portfolio/photography/jewelry-headband.webp" },
   { label: "Reel", image: "/videos/trenzo-wallet.jpg", video: true },
@@ -133,8 +132,9 @@ function ShootScene() {
 
       <div className="rounded-[2rem] rounded-tr-[4rem] bg-ink p-3 shadow-[0_40px_80px_-40px_rgba(7,4,26,0.7)] sm:p-4">
         {/* Viewfinder */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem]">
-          <Image src={hero} alt="" fill sizes="(min-width:1024px) 40vw, 90vw" className="object-cover" priority />
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-white">
+          {/* A white-background studio shot, shown whole */}
+          <Image src={hero} alt="" fill sizes="(min-width:1024px) 40vw, 90vw" className="object-contain" priority />
           <div aria-hidden className="pointer-events-none absolute inset-4 sm:inset-6">
             <span className="absolute top-0 left-0 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-white" />
             <span className="absolute top-0 right-0 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-white" />
