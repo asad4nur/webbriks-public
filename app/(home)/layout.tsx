@@ -1,8 +1,8 @@
-import ChatWidget from "@/components/chat/ChatWidget";
-import BackToTop from "@/components/BackToTop";
+import { Suspense } from "react";
+
+import FloatingWidgets from "@/components/FloatingWidgets";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default function HomeLayout({ children }: LayoutProps<"/">) {
   return (
@@ -10,9 +10,10 @@ export default function HomeLayout({ children }: LayoutProps<"/">) {
       <Navbar />
       {children}
       <Footer />
-      <BackToTop />
-      <WhatsAppButton />
-      <ChatWidget />
+      {/* usePathname() is request-time data: the buttons stream in after the page is prerendered. */}
+      <Suspense fallback={null}>
+        <FloatingWidgets />
+      </Suspense>
     </div>
   );
 }

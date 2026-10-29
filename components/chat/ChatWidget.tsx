@@ -24,7 +24,8 @@ import { getToken } from "@/lib/guest-auth/tokenStore";
 import Attachment from "./Attachment";
 import { fieldClass, labelClass, PhoneField, press, primaryButton } from "./fields";
 import MarkdownText from "./MarkdownText";
-import TicketForm, { type AIHistoryEntry } from "./TicketForm";
+import { type AIHistoryEntry } from "./TicketForm";
+import TicketPanel from "./TicketPanel";
 import Turnstile from "./Turnstile";
 import { useLiveSupport } from "./useLiveSupport";
 
@@ -45,8 +46,11 @@ const AI_HISTORY_KEY = "webbriks_ai_history";
 const TOOLTIP_KEY = "webbriks_chat_tooltip_dismissed";
 
 const gradient = "bg-linear-to-br from-brand-orchid via-brand-violet to-brand-indigo";
-const shadowCard = "shadow-[0_1px_2px_rgba(7,4,26,0.06),0_0_0_1px_rgba(7,4,26,0.05)]";
-const headerButton = `${press} flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white`;
+const shadowCard = "shadow-[0_1px_2px_rgba(43,5,146,0.05),0_10px_24px_-14px_rgba(43,5,146,0.22),0_0_0_1px_rgba(83,20,214,0.08)]";
+const bubbleOut = `${gradient} rounded-br-md text-white shadow-[0_12px_24px_-12px_rgba(83,20,214,0.75),inset_0_1px_0_rgba(255,255,255,0.18)]`;
+const composer = "flex items-end gap-1 rounded-full bg-tint-50 p-1.5 pl-2 ring-1 ring-brand-violet/[0.12] transition-[background-color,box-shadow] focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-violet/35 focus-within:shadow-[0_8px_24px_-12px_rgba(83,20,214,0.45)]";
+const sendButton = `${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-[0_10px_20px_-8px_rgba(83,20,214,0.85),inset_0_1px_0_rgba(255,255,255,0.25)] hover:brightness-110 disabled:opacity-35 disabled:shadow-none ${gradient}`;
+const headerButton = `${press} flex h-10 w-10 items-center justify-center rounded-full text-white/80 hover:bg-white/15 hover:text-white`;
 
 const store = {
   get: (key: string) => {
@@ -87,7 +91,7 @@ function Mark({ className = "h-8 w-8" }: { className?: string }) {
 
 function AgentAvatar({ name }: { name: string }) {
   return (
-    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
+    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-brand-violet to-brand-orchid text-xs font-semibold text-white shadow-[0_6px_14px_-6px_rgba(83,20,214,0.7)]">
       {name.trim().charAt(0).toUpperCase() || "W"}
     </span>
   );
@@ -117,6 +121,7 @@ function growTextarea(el: HTMLTextAreaElement) {
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [launcherHovered, setLauncherHovered] = useState(false);
   const live = useLiveSupport(isOpen);
 
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -124,7 +129,7 @@ export default function ChatWidget() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [showTicketForm, setShowTicketForm] = useState(false);
+  const [ticketView, setTicketView] = useState<"hub" | "new" | null>(null);
   const [liveInput, setLiveInput] = useState("");
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -188,7 +193,7 @@ export default function ChatWidget() {
     setHistory([]);
     setConversationId(null);
     setInput("");
-    setShowTicketForm(false);
+    setTicketView(null);
     setLiveInput("");
   }
 
@@ -283,7 +288,7 @@ export default function ChatWidget() {
       {/* Launcher */}
       {!isOpen && (
         <div className="fixed right-4 bottom-20 z-40 flex flex-col items-end gap-3 sm:right-6 sm:bottom-24">
-          {showTooltip && (
+          {showTooltip && !launcherHovered && (
             <div
               role="status"
               className="relative mr-1 flex animate-chat-in items-center gap-1 rounded-full bg-white py-2 pr-2 pl-4 text-sm font-medium text-ink shadow-[0_10px_30px_-12px_rgba(7,4,26,0.35)] ring-1 ring-ink/[0.07]"
@@ -297,6 +302,8 @@ export default function ChatWidget() {
           <button
             type="button"
             onClick={open}
+            onMouseEnter={() => setLauncherHovered(true)}
+            onMouseLeave={() => setLauncherHovered(false)}
             aria-label="Open chat"
             className={`group relative flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_12px_30px_-10px_rgba(83,20,214,0.65)] ring-4 ring-white/70 transition-[translate,scale,filter] duration-300 hover:-translate-y-1 hover:brightness-105 active:scale-[0.96] focus-visible:ring-brand-violet/40 motion-reduce:translate-y-0 motion-reduce:transition-none sm:h-14 sm:w-14 ${gradient}`}
           >
@@ -329,28 +336,33 @@ export default function ChatWidget() {
           role="dialog"
           aria-label="Chat with Webbriks"
           onKeyDown={(e) => e.key === "Escape" && setIsOpen(false)}
-          className="fixed right-4 bottom-4 z-50 flex h-[min(40rem,calc(100dvh-2rem))] w-[min(25rem,calc(100vw-2rem))] origin-bottom-right animate-chat-pop flex-col overflow-hidden rounded-3xl bg-white shadow-[0_0_0_1px_rgba(7,4,26,0.06),0_30px_70px_-24px_rgba(43,5,146,0.45),0_10px_24px_-12px_rgba(7,4,26,0.25)] sm:right-6 sm:bottom-6"
+          className="fixed right-4 bottom-4 z-50 flex h-[min(40rem,calc(100dvh-2rem))] w-[min(25rem,calc(100vw-2rem))] origin-bottom-right animate-chat-pop flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_0_0_1px_rgba(83,20,214,0.1),0_40px_90px_-28px_rgba(83,20,214,0.55),0_14px_30px_-14px_rgba(7,4,26,0.25)] sm:right-6 sm:bottom-6"
         >
           {/* Header */}
-          <div className="relative flex h-16 shrink-0 items-center justify-between overflow-hidden bg-ink px-3 text-white">
-            <div aria-hidden className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-brand-violet/50 blur-3xl" />
-            <div aria-hidden className="pointer-events-none absolute -bottom-20 left-10 h-36 w-36 rounded-full bg-brand-orchid/25 blur-3xl" />
+          <div className="relative flex h-[4.5rem] shrink-0 items-center justify-between overflow-hidden bg-linear-to-br from-brand-indigo via-brand-violet to-[#8a2be2] px-3.5 text-white shadow-[0_1px_0_rgba(255,255,255,0.12)_inset]">
+            <div aria-hidden className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-brand-orchid/55 blur-3xl" />
+            <div aria-hidden className="pointer-events-none absolute -bottom-20 left-8 h-36 w-36 rounded-full bg-white/15 blur-3xl" />
             <div className="relative flex min-w-0 items-center gap-2">
               {phase !== "idle" && (
                 <button type="button" onClick={live.leave} aria-label="Back to the assistant" className={headerButton}>
                   <ArrowLeft className="h-4 w-4" aria-hidden />
                 </button>
               )}
-              <Mark className={phase === "idle" ? "ml-1 h-9 w-9" : "h-9 w-9"} />
+              <Mark className={phase === "idle" ? "ml-1 h-10 w-10" : "h-10 w-10"} />
               <div className="min-w-0 pl-0.5">
-                <h3 className="truncate text-[15px] leading-tight font-semibold tracking-tight">{heading.title}</h3>
-                <p className="flex items-center gap-1.5 text-xs text-white/60">
-                  <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${phase === "live" && !live.ended ? "bg-emerald-400" : "bg-white/40"}`} />
+                <h3 className="truncate text-base leading-tight font-semibold tracking-tight">{heading.title}</h3>
+                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/75">
+                  <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${phase === "live" && !live.ended ? "bg-emerald-300 shadow-[0_0_0_3px_rgba(110,231,183,0.25)]" : "bg-white/50"}`} />
                   {heading.sub}
                 </p>
               </div>
             </div>
             <div className="relative flex items-center">
+              {phase === "idle" && (
+                <button type="button" onClick={() => setTicketView("hub")} title="Tickets" aria-label="Tickets" className={headerButton}>
+                  <Ticket className="h-4 w-4" aria-hidden />
+                </button>
+              )}
               {phase === "idle" && (
                 <button type="button" onClick={resetAll} title="Start over" aria-label="Start over" className={headerButton}>
                   <RotateCcw className="h-4 w-4" aria-hidden />
@@ -365,17 +377,17 @@ export default function ChatWidget() {
           {/* AI assistant */}
           {phase === "idle" && (
             <>
-              <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto overscroll-contain bg-paper px-4 py-4">
+              <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto overscroll-contain bg-linear-to-b from-tint-50 via-white to-tint-50/60 px-4 py-5">
                 {messages.map((msg) => (
                   <div key={msg.id} className="animate-chat-in">
                     <div className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                       {msg.role !== "user" && <Mark className="mt-0.5 h-8 w-8" />}
                       <div
-                        className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed text-pretty ${
+                        className={`max-w-[82%] rounded-[1.25rem] px-4 py-2.5 text-sm leading-relaxed text-pretty ${
                           msg.role === "user"
-                            ? `${gradient} rounded-br-md text-white shadow-[0_8px_20px_-10px_rgba(83,20,214,0.8)]`
+                            ? bubbleOut
                             : msg.role === "system"
-                              ? "bg-ink/[0.04] text-ink/65"
+                              ? "bg-tint-100/70 text-brand-indigo/70"
                               : `rounded-tl-md bg-white text-ink ${shadowCard}`
                         }`}
                       >
@@ -386,7 +398,7 @@ export default function ChatWidget() {
                     {msg.action && msg.action !== "continue" && (
                       <div className="mt-2.5 ml-10 flex flex-wrap gap-2">
                         {msg.action === "create_ticket" && (
-                          <button type="button" onClick={() => setShowTicketForm(true)} disabled={thinking} className={`${press} flex items-center gap-1.5 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-4 py-2.5 text-xs font-semibold text-white shadow-[0_8px_20px_-8px_rgba(83,20,214,0.8)] hover:brightness-110 disabled:opacity-50`}>
+                          <button type="button" onClick={() => setTicketView("new")} disabled={thinking} className={`${press} flex items-center gap-1.5 rounded-full bg-linear-to-r from-brand-orchid to-brand-violet px-4 py-2.5 text-xs font-semibold text-white shadow-[0_8px_20px_-8px_rgba(83,20,214,0.8)] hover:brightness-110 disabled:opacity-50`}>
                             <Ticket className="h-3.5 w-3.5" aria-hidden /> Create a support ticket
                           </button>
                         )}
@@ -408,12 +420,15 @@ export default function ChatWidget() {
                 {showSuggestions && (
                   <div className="ml-10 flex animate-chat-in flex-wrap gap-2">
                     {SUGGESTIONS.map((q) => (
-                      <button key={q} type="button" onClick={() => void sendAI(q)} className={`${press} rounded-full bg-white px-3.5 py-2 text-xs font-medium text-brand-violet ring-1 ring-brand-violet/20 hover:bg-tint-50`}>
+                      <button key={q} type="button" onClick={() => void sendAI(q)} className={`${press} rounded-full bg-white px-3.5 py-2 text-xs font-medium text-brand-violet shadow-[0_6px_14px_-8px_rgba(83,20,214,0.4)] ring-1 ring-brand-violet/20 hover:bg-tint-50 hover:ring-brand-violet/35`}>
                         {q}
                       </button>
                     ))}
                     <button type="button" onClick={live.connect} className={`${press} flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-medium text-ink ring-1 ring-ink/10 hover:bg-tint-50`}>
                       <Headphones className="h-3.5 w-3.5" aria-hidden /> Talk to a person
+                    </button>
+                    <button type="button" onClick={() => setTicketView("hub")} className={`${press} flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-medium text-ink ring-1 ring-ink/10 hover:bg-tint-50`}>
+                      <Ticket className="h-3.5 w-3.5" aria-hidden /> Support tickets
                     </button>
                   </div>
                 )}
@@ -428,9 +443,9 @@ export default function ChatWidget() {
                 )}
               </div>
 
-              {!showTicketForm && (
-                <form onSubmit={(e) => { e.preventDefault(); void sendAI(); }} className="shrink-0 border-t border-ink/[0.07] bg-white p-3">
-                  <div className="flex items-end gap-2 rounded-[1.25rem] bg-paper p-1.5 ring-1 ring-ink/[0.08] transition-shadow focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-violet/40">
+              {!ticketView && (
+                <form onSubmit={(e) => { e.preventDefault(); void sendAI(); }} className="shrink-0 border-t border-brand-violet/[0.08] bg-white p-3.5">
+                  <div className={composer}>
                     <textarea
                       ref={aiInputRef}
                       value={input}
@@ -450,7 +465,7 @@ export default function ChatWidget() {
                       rows={1}
                       className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink/40 disabled:opacity-50"
                     />
-                    <button type="submit" disabled={!input.trim() || thinking} aria-label="Send" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-[0_8px_20px_-8px_rgba(83,20,214,0.8)] hover:brightness-110 disabled:opacity-35 disabled:shadow-none ${gradient}`}>
+                    <button type="submit" disabled={!input.trim() || thinking} aria-label="Send" className={sendButton}>
                       <Send className="h-4 w-4 -translate-x-px translate-y-px" aria-hidden />
                     </button>
                   </div>
@@ -460,14 +475,15 @@ export default function ChatWidget() {
                 </form>
               )}
 
-              {showTicketForm && (
-                <TicketForm
+              {ticketView && (
+                <TicketPanel
                   token={live.token}
                   history={history}
-                  onClose={() => setShowTicketForm(false)}
-                  onCreated={(id) => {
-                    setShowTicketForm(false);
-                    addMessage("system", `Your ticket has been created (${id}). We'll reply by email.`);
+                  startAt={ticketView}
+                  onClose={() => setTicketView(null)}
+                  onDone={(id) => {
+                    setTicketView(null);
+                    addMessage("system", `Ticket ${id} is created. Open "Tickets" any time to check on it.`);
                   }}
                 />
               )}
@@ -546,7 +562,7 @@ export default function ChatWidget() {
           {/* Live chat with an agent */}
           {phase === "live" && (
             <>
-              <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain bg-paper px-4 py-4">
+              <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain bg-linear-to-b from-tint-50 via-white to-tint-50/60 px-4 py-5">
                 {live.messages.length === 0 && (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                     <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-violet shadow-[0_8px_24px_-12px_rgba(43,5,146,0.4)] ring-1 ring-ink/[0.06]">
@@ -575,7 +591,7 @@ export default function ChatWidget() {
                   if (system)
                     return (
                       <div key={msg._id} className="mt-3 flex animate-chat-in justify-center">
-                        <span className="rounded-full bg-ink/[0.05] px-3 py-1 text-[11px] text-ink/60">{msg.content}</span>
+                        <span className="rounded-full bg-tint-100/80 px-3 py-1 text-[11px] font-medium text-brand-indigo/70 ring-1 ring-brand-violet/[0.08]">{msg.content}</span>
                       </div>
                     );
 
@@ -584,7 +600,7 @@ export default function ChatWidget() {
                       {!mine && (first ? <AgentAvatar name={msg.senderName} /> : <div className="w-8 shrink-0" aria-hidden />)}
                       <div className="max-w-[82%]">
                         {!mine && first && <p className="mb-1 ml-1 text-[11px] font-medium text-ink/55">{msg.senderName}</p>}
-                        <div className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${mine ? `${gradient} rounded-br-md text-white shadow-[0_8px_20px_-10px_rgba(83,20,214,0.8)]` : `rounded-tl-md bg-white text-ink ${shadowCard}`}`}>
+                        <div className={`rounded-[1.25rem] px-4 py-2.5 text-sm leading-relaxed ${mine ? bubbleOut : `rounded-tl-md bg-white text-ink ${shadowCard}`}`}>
                           {msg.content && <span className="break-words whitespace-pre-wrap">{msg.content}</span>}
                           {msg.attachments?.map((url) => <Attachment key={url} url={url} token={live.token} />)}
                         </div>
@@ -607,7 +623,7 @@ export default function ChatWidget() {
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-ink/[0.07] bg-white p-3">
+              <div className="shrink-0 border-t border-brand-violet/[0.08] bg-white p-3.5">
                 {live.ended ? (
                   <button type="button" onClick={resetAll} className={primaryButton}>
                     <MessageCircle className="h-4 w-4" aria-hidden /> Back to the assistant
@@ -616,7 +632,7 @@ export default function ChatWidget() {
                   <form onSubmit={sendLive}>
                     <input ref={fileRef} type="file" multiple accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,.docx,.xlsx,.txt" className="hidden" onChange={onFiles} />
                     {live.uploadError && <p role="alert" className="mb-1.5 px-1 text-xs text-red-600">{live.uploadError}</p>}
-                    <div className="flex items-end gap-1 rounded-[1.25rem] bg-paper p-1.5 ring-1 ring-ink/[0.08] transition-shadow focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-violet/40">
+                    <div className={composer}>
                       <button type="button" onClick={() => fileRef.current?.click()} disabled={live.uploading} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
                         {live.uploading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Paperclip className="h-4 w-4" aria-hidden />}
                       </button>
@@ -639,7 +655,7 @@ export default function ChatWidget() {
                         rows={1}
                         className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-1.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink/40"
                       />
-                      <button type="submit" disabled={!liveInput.trim()} aria-label="Send" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-[0_8px_20px_-8px_rgba(83,20,214,0.8)] hover:brightness-110 disabled:opacity-35 disabled:shadow-none ${gradient}`}>
+                      <button type="submit" disabled={!liveInput.trim()} aria-label="Send" className={sendButton}>
                         <Send className="h-4 w-4 -translate-x-px translate-y-px" aria-hidden />
                       </button>
                     </div>
