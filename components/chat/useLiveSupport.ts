@@ -91,8 +91,6 @@ export function useLiveSupport(isOpen: boolean) {
   // The team moved this chat to WhatsApp: it is read-only here and the visitor is told to continue there.
   const [handedOff, setHandedOff] = useState(false);
   const [agentSeen, setAgentSeen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
   const [unread, setUnread] = useState(0);
 
   // The guest token is shared with other tabs through tokenStore.
@@ -327,9 +325,9 @@ export function useLiveSupport(isOpen: boolean) {
     setLoading(false);
   };
 
-  const send = (text: string) => {
-    if (!text || !socketRef.current || !sessionId || ended) return;
-    socketRef.current.emit("chat:message", { sessionId, text });
+  const send = (text: string, attachments: string[] = []) => {
+    if ((!text && attachments.length === 0) || !socketRef.current || !sessionId || ended) return;
+    socketRef.current.emit("chat:message", { sessionId, text, attachments });
     setAgentSeen(false);
   };
 
@@ -343,47 +341,32 @@ export function useLiveSupport(isOpen: boolean) {
     );
   };
 
-  const upload = async (files: File[]) => {
+  /** Uploads one file to the private bucket and returns its stored address; the caller sends it with a message. */
+  const uploadOne = async (file: File): Promise<string> => {
     const guestToken = getToken();
-    if (!files.length || !sessionId || !guestToken || ended) return;
-    setUploading(true);
-    setUploadError("");
-    const urls: string[] = [];
+    if (!sessionId || !guestToken || ended) throw new Error("The chat is not open.");
+    if (file.size > MAX_UPLOAD_SIZE) throw new Error(`${file.name} is over the 10 MB limit.`);
+    const presign = await fetch(`${API_URL}/api/support/attachments/presigned-url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${guestToken}` },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        folder: "chats",
+        referenceId: sessionId,
+      }),
+    });
+    const presigned = await presign.json().catch(() => null);
+    if (!presign.ok || !presigned?.success) throw new Error(presigned?.message || "Could not start the upload.");
 
-    for (const file of files) {
-      if (file.size > MAX_UPLOAD_SIZE) {
-        setUploadError(`${file.name} is over the 10 MB limit.`);
-        continue;
-      }
-      try {
-        const presign = await fetch(`${API_URL}/api/support/attachments/presigned-url`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${guestToken}` },
-          body: JSON.stringify({
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-            folder: "chats",
-            referenceId: sessionId,
-          }),
-        });
-        const presigned = await presign.json();
-        if (!presign.ok || !presigned.success) throw new Error(presigned.message || "Could not start the upload.");
-
-        const put = await fetch(presigned.data.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
-        urls.push(presigned.data.fileUrl);
-      } catch (err) {
-        setUploadError(errorText(err, `Could not upload ${file.name}.`));
-      }
-    }
-
-    if (urls.length) socketRef.current?.emit("chat:message", { sessionId, text: "", attachments: urls });
-    setUploading(false);
+    const put = await fetch(presigned.data.uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
+    return presigned.data.fileUrl as string;
   };
 
   /** Back to the AI assistant. An active chat stays alive so the visitor can return to it. */
@@ -421,15 +404,13 @@ export function useLiveSupport(isOpen: boolean) {
     setEnded(false);
     setHandedOff(false);
     setAgentSeen(false);
-    setUploading(false);
-    setUploadError("");
   };
 
   return {
     phase, step, name, setName, email, setEmail, phone, setPhone, isWhatsapp, setIsWhatsapp, otp, setOtp,
     humanToken, setHumanToken, humanKey, needsHumanCheck: humanCheckEnabled, loading, error,
-    token, messages, typing, ended, handedOff, agentSeen, uploading, uploadError,
+    token, messages, typing, ended, handedOff, agentSeen,
     unread, clearUnread: () => setUnread(0),
-    connect, submitDetails, verifyCode, editDetails, send, onType, upload, leave, reset,
+    connect, submitDetails, verifyCode, editDetails, send, onType, uploadOne, leave, reset,
   };
 }

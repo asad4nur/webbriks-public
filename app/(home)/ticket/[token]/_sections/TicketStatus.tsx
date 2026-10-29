@@ -1,10 +1,12 @@
 "use client";
 
-import { CheckCircle2, Download, FileText, Loader2, Lock, Paperclip, Send, SearchX, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, Loader2, Lock, Paperclip, Send, SearchX } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import AttachmentGrid from "@/components/chat/AttachmentGrid";
 import { press } from "@/components/chat/fields";
-import { extractS3Key, getFileName, isImageUrl, MAX_UPLOAD_SIZE } from "@/lib/chat/attachments";
+import StagedFiles, { type StagedFile } from "@/components/chat/StagedFiles";
+import { MAX_UPLOAD_SIZE } from "@/lib/chat/attachments";
 import { API_URL } from "@/lib/chat/config";
 import {
   TICKET_DETAIL as DETAIL,
@@ -54,59 +56,24 @@ function ClampedText({ text, mine }: { text: string; mine: boolean }) {
   );
 }
 
-// A file in the ticket. The bucket is private, so the link comes from the server, scoped to this ticket.
-function TicketAttachment({ url, token }: { url: string; token: string }) {
-  const key = extractS3Key(url);
-  const [signed, setSigned] = useState<{ url: string; view: string | null } | null>(null);
-
-  useEffect(() => {
-    if (!key) return;
-    let cancelled = false;
-    fetch(api(token, `/view-url?fileKey=${encodeURIComponent(key)}`), { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data) => !cancelled && setSigned({ url, view: data.success ? data.data.viewUrl : null }))
-      .catch(() => !cancelled && setSigned({ url, view: null }));
-    return () => {
-      cancelled = true;
-    };
-  }, [key, token, url]);
-
-  if (key && signed?.url !== url)
-    return (
-      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] opacity-70">
-        <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> Loading…
-      </div>
-    );
-  const href = key ? signed?.view : url;
-  if (!href) return <div className="mt-1.5 text-[11px] opacity-60">Attachment unavailable</div>;
-  if (isImageUrl(url))
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="mt-1.5 block">
-        {/* eslint-disable-next-line @next/next/no-img-element -- presigned, expiring URL: next/image can't cache it */}
-        <img src={href} alt="Attachment" loading="lazy" className="max-h-40 max-w-56 rounded-lg object-cover ring-1 ring-ink/10" />
-      </a>
-    );
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex max-w-56 items-center gap-1.5 rounded-lg bg-ink/[0.06] px-2.5 py-1.5 text-xs ring-1 ring-ink/10 transition-colors hover:bg-ink/10">
-      <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
-      <span className="flex-1 truncate">{getFileName(url)}</span>
-      <Download className="h-3 w-3 shrink-0" aria-hidden />
-    </a>
-  );
-}
-
 // A ticket and its conversation, by the private token in the emailed link. Whoever holds the link is the customer:
 // they can read the thread and write to us, with files. Two sides: the ticket on the left, the conversation on the right.
 export default function TicketStatus({ token }: { token: string }) {
   const [state, setState] = useState<State>({ kind: "loading" });
   const [text, setText] = useState("");
-  const [files, setFiles] = useState<{ url: string; name: string }[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<StagedFile[]>([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const count = state.kind === "ready" ? state.messages.length : 0;
+
+  // A short-lived link for one file of this ticket (the bucket is private; the server only signs this ticket's files).
+  const resolve = useCallback(async (key: string) => {
+    const res = await fetch(api(token, `/view-url?fileKey=${encodeURIComponent(key)}`), { cache: "no-store" });
+    const data = await res.json().catch(() => null);
+    return res.ok && data?.success ? (data.data.viewUrl as string) : null;
+  }, [token]);
 
   // Bumped to reload the thread right away (after sending a message).
   const [reloadKey, setReloadKey] = useState(0);
@@ -143,53 +110,70 @@ export default function TicketStatus({ token }: { token: string }) {
     endRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [count]);
 
+  // Files go up as soon as they are picked and show above the box until the message is sent.
   async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (picked.length === 0) return;
     setError("");
-    if (files.length + picked.length > MAX_FILES) return setError(`You can attach up to ${MAX_FILES} files at a time.`);
-    setUploading(true);
-    const added: { url: string; name: string }[] = [];
-    for (const file of picked) {
-      if (file.size > MAX_UPLOAD_SIZE) {
-        setError(`${file.name} is over the 10 MB limit.`);
-        continue;
-      }
-      try {
-        const res = await fetch(api(token, "/upload-url"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
-        });
-        const data = await res.json().catch(() => null);
-        if (!res.ok || !data?.success) throw new Error(data?.message || "Could not start the upload.");
-        const put = await fetch(data.data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-        if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
-        added.push({ url: data.data.fileUrl, name: file.name });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : `Could not upload ${file.name}.`);
-      }
-    }
-    setFiles((f) => [...f, ...added]);
-    setUploading(false);
+    const room = MAX_FILES - files.length;
+    if (picked.length > room) setError(`You can attach up to ${MAX_FILES} files at a time.`);
+    const take = picked.slice(0, Math.max(room, 0));
+    const tiles: StagedFile[] = take.map((file) => ({
+      id: `${file.name}-${file.size}-${Math.random().toString(36).slice(2, 8)}`,
+      name: file.name,
+      preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      status: file.size > MAX_UPLOAD_SIZE ? "error" : "uploading",
+      error: file.size > MAX_UPLOAD_SIZE ? "Over the 10 MB limit" : undefined,
+    }));
+    setFiles((cur) => [...cur, ...tiles]);
+    await Promise.all(
+      take.map(async (file, i) => {
+        const tile = tiles[i];
+        if (tile.status === "error") return setError(`${file.name} is over the 10 MB limit.`);
+        try {
+          const res = await fetch(api(token, "/upload-url"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
+          });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data?.success) throw new Error(data?.message || "Could not start the upload.");
+          const put = await fetch(data.data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+          if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
+          setFiles((cur) => cur.map((f) => (f.id === tile.id ? { ...f, status: "done", url: data.data.fileUrl } : f)));
+        } catch (err) {
+          const message = err instanceof Error ? err.message : `Could not upload ${file.name}.`;
+          setError(message);
+          setFiles((cur) => cur.map((f) => (f.id === tile.id ? { ...f, status: "error", error: message } : f)));
+        }
+      }),
+    );
   }
+
+  const removeFile = (id: string) =>
+    setFiles((cur) => {
+      cur.filter((f) => f.id === id).forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
+      return cur.filter((f) => f.id !== id);
+    });
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const body = text.trim();
-    if ((!body && files.length === 0) || sending || uploading) return;
+    const ready = files.filter((f) => f.status === "done" && f.url);
+    if ((!body && ready.length === 0) || sending || files.some((f) => f.status === "uploading")) return;
     setSending(true);
     setError("");
     try {
       const res = await fetch(api(token), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: body, attachments: files.map((f) => f.url) }),
+        body: JSON.stringify({ text: body, attachments: ready.map((f) => f.url) }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) throw new Error(data?.message || "Could not send your message. Please try again.");
       setText("");
+      files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
       setFiles([]);
       setReloadKey((k) => k + 1);
     } catch (err) {
@@ -292,16 +276,18 @@ export default function TicketStatus({ token }: { token: string }) {
                 <div className="max-w-[85%]">
                   {!mine && <p className="mb-1 ml-1 text-[11px] font-medium text-ink/55">Webbriks Support</p>}
                   <div
-                    className={`rounded-[1.25rem] px-4 py-2.5 text-sm leading-relaxed ${
+                    className={`rounded-[1.25rem] text-sm leading-relaxed ${m.attachments.length > 0 && !m.text ? "p-1" : "px-4 py-2.5"} ${
                       mine
                         ? "rounded-br-md bg-linear-to-br from-brand-orchid via-brand-violet to-brand-indigo text-white shadow-[0_12px_24px_-12px_rgba(83,20,214,0.75)]"
                         : "rounded-tl-md bg-white text-ink shadow-[0_1px_2px_rgba(43,5,146,0.05),0_10px_24px_-14px_rgba(43,5,146,0.22),0_0_0_1px_rgba(83,20,214,0.08)]"
                     }`}
                   >
                     {m.text && <ClampedText text={m.text} mine={mine} />}
-                    {m.attachments.map((u) => (
-                      <TicketAttachment key={u} url={u} token={token} />
-                    ))}
+                    {m.attachments.length > 0 && (
+                      <div className={m.text ? "mt-2" : ""}>
+                        <AttachmentGrid urls={m.attachments} resolve={resolve} tone={mine ? "mine" : "theirs"} />
+                      </div>
+                    )}
                   </div>
                   <p className={`mt-1 text-[10px] text-ink/45 tabular-nums ${mine ? "mr-1 text-right" : "ml-1"}`}>{time(m.createdAt)}</p>
                 </div>
@@ -316,22 +302,11 @@ export default function TicketStatus({ token }: { token: string }) {
             <p className="py-1 text-center text-sm text-ink/55">This ticket is closed, so new messages can&apos;t be added.</p>
           ) : (
             <form onSubmit={send}>
-              {files.length > 0 && (
-                <ul className="mb-2 flex flex-wrap gap-1.5">
-                  {files.map((f) => (
-                    <li key={f.url} className="flex max-w-48 items-center gap-1.5 rounded-full bg-tint-100 py-1 pr-1 pl-3 text-xs text-brand-indigo">
-                      <span className="truncate">{f.name}</span>
-                      <button type="button" onClick={() => setFiles((all) => all.filter((x) => x.url !== f.url))} aria-label={`Remove ${f.name}`} className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full hover:bg-brand-violet/10">
-                        <X className="h-3 w-3" aria-hidden />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <StagedFiles items={files} onRemove={removeFile} />
               <input ref={fileRef} type="file" multiple accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,.docx,.xlsx,.txt" className="hidden" onChange={onFiles} />
               <div className="flex items-end gap-1 rounded-[1.25rem] bg-tint-50 p-1.5 ring-1 ring-brand-violet/[0.12] transition-[background-color,box-shadow] focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-violet/35">
-                <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Paperclip className="h-4 w-4" aria-hidden />}
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={files.length >= MAX_FILES} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
+                  <Paperclip className="h-4 w-4" aria-hidden />
                 </button>
                 <textarea
                   value={text}
@@ -349,7 +324,7 @@ export default function TicketStatus({ token }: { token: string }) {
                 />
                 <button
                   type="submit"
-                  disabled={(!text.trim() && files.length === 0) || sending || uploading}
+                  disabled={(!text.trim() && !files.some((f) => f.status === "done")) || sending || files.some((f) => f.status === "uploading")}
                   aria-label="Send"
                   className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-brand-orchid via-brand-violet to-brand-indigo text-white shadow-[0_10px_20px_-8px_rgba(83,20,214,0.85)] hover:brightness-110 disabled:opacity-35 disabled:shadow-none`}
                 >

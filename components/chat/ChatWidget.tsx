@@ -16,15 +16,18 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { MAX_UPLOAD_SIZE } from "@/lib/chat/attachments";
 import { API_URL } from "@/lib/chat/config";
 import { getToken } from "@/lib/guest-auth/tokenStore";
 
-import Attachment from "./Attachment";
+import AttachmentGrid from "./AttachmentGrid";
 import { fieldClass, labelClass, PhoneField, press, primaryButton } from "./fields";
 import MarkdownText from "./MarkdownText";
+import StagedFiles, { type StagedFile } from "./StagedFiles";
 import { type AIHistoryEntry } from "./TicketForm";
+import TicketLinkCard, { parseTicketLink } from "./TicketLinkCard";
 import TicketPanel from "./TicketPanel";
 import Turnstile from "./Turnstile";
 import { useLiveSupport } from "./useLiveSupport";
@@ -45,6 +48,7 @@ const AI_ID_KEY = "webbriks_ai_conversation_id";
 const AI_HISTORY_KEY = "webbriks_ai_history";
 const TOOLTIP_KEY = "webbriks_chat_tooltip_dismissed";
 
+const MAX_STAGED = 5;
 const gradient = "bg-linear-to-br from-brand-orchid via-brand-violet to-brand-indigo";
 const shadowCard = "shadow-[0_1px_2px_rgba(43,5,146,0.05),0_10px_24px_-14px_rgba(43,5,146,0.22),0_0_0_1px_rgba(83,20,214,0.08)]";
 const bubbleOut = `${gradient} rounded-br-md text-white shadow-[0_12px_24px_-12px_rgba(83,20,214,0.75),inset_0_1px_0_rgba(255,255,255,0.18)]`;
@@ -131,6 +135,9 @@ export default function ChatWidget() {
   const [thinking, setThinking] = useState(false);
   const [ticketView, setTicketView] = useState<"hub" | "new" | null>(null);
   const [liveInput, setLiveInput] = useState("");
+  const [staged, setStaged] = useState<StagedFile[]>([]);
+  const [fileError, setFileError] = useState("");
+  const [showEarlier, setShowEarlier] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
@@ -186,6 +193,12 @@ export default function ChatWidget() {
     store.set(TOOLTIP_KEY, "1");
   }
 
+  const dropStaged = (items: StagedFile[]) => items.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
+  const clearStaged = () => {
+    dropStaged(staged);
+    setStaged([]);
+  };
+
   function resetAll() {
     live.reset();
     store.remove(AI_ID_KEY, AI_HISTORY_KEY);
@@ -195,6 +208,9 @@ export default function ChatWidget() {
     setInput("");
     setTicketView(null);
     setLiveInput("");
+    clearStaged();
+    setFileError("");
+    setShowEarlier(false);
   }
 
   const addMessage = (role: DisplayMessage["role"], text: string, action?: DisplayMessage["action"]) =>
@@ -254,21 +270,71 @@ export default function ChatWidget() {
     }
   }
 
+  // A short-lived link for a private file in this chat (the bucket is private).
+  const liveToken = live.token;
+  const resolveLive = useCallback(
+    async (key: string) => {
+      if (!liveToken) return null;
+      const res = await fetch(`${API_URL}/api/support/attachments/view-url?fileKey=${encodeURIComponent(key)}`, {
+        headers: { Authorization: `Bearer ${liveToken}` },
+      });
+      const data = await res.json().catch(() => null);
+      return res.ok && data?.success ? (data.data.viewUrl as string) : null;
+    },
+    [liveToken],
+  );
+
   function sendLive(e?: React.FormEvent) {
     e?.preventDefault();
     const text = liveInput.trim();
-    if (!text) return;
-    live.send(text);
+    const ready = staged.filter((f) => f.status === "done" && f.url);
+    if ((!text && ready.length === 0) || staged.some((f) => f.status === "uploading")) return;
+    live.send(text, ready.map((f) => f.url as string));
     setLiveInput("");
+    clearStaged();
+    setFileError("");
     if (liveInputRef.current) liveInputRef.current.style.height = "auto";
     liveInputRef.current?.focus();
   }
 
+  // Files go up as soon as they are picked, so "send" is instant; they show above the box until then.
   async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
+    const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
-    await live.upload(files);
+    if (picked.length === 0) return;
+    setFileError("");
+    const room = MAX_STAGED - staged.length;
+    if (picked.length > room) setFileError(`You can send up to ${MAX_STAGED} files at a time.`);
+    const take = picked.slice(0, Math.max(room, 0));
+    const tiles: StagedFile[] = take.map((file) => ({
+      id: `${file.name}-${file.size}-${Math.random().toString(36).slice(2, 8)}`,
+      name: file.name,
+      preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      status: file.size > MAX_UPLOAD_SIZE ? "error" : "uploading",
+      error: file.size > MAX_UPLOAD_SIZE ? "Over the 10 MB limit" : undefined,
+    }));
+    setStaged((cur) => [...cur, ...tiles]);
+    await Promise.all(
+      take.map(async (file, i) => {
+        const tile = tiles[i];
+        if (tile.status === "error") return setFileError(`${file.name} is over the 10 MB limit.`);
+        try {
+          const url = await live.uploadOne(file);
+          setStaged((cur) => cur.map((f) => (f.id === tile.id ? { ...f, status: "done", url } : f)));
+        } catch (err) {
+          const message = err instanceof Error ? err.message : `Could not upload ${file.name}.`;
+          setFileError(message);
+          setStaged((cur) => cur.map((f) => (f.id === tile.id ? { ...f, status: "error", error: message } : f)));
+        }
+      }),
+    );
   }
+
+  const removeStaged = (id: string) =>
+    setStaged((cur) => {
+      dropStaged(cur.filter((f) => f.id === id));
+      return cur.filter((f) => f.id !== id);
+    });
 
   const heading =
     phase === "idle"
@@ -278,9 +344,14 @@ export default function ChatWidget() {
         : { title: "Live support", sub: live.handedOff ? "Continues on WhatsApp" : live.ended ? "Chat ended" : agentJoined ? "Connected" : "Waiting for an agent" };
 
   let lastOwn = -1;
+  let lastResolved = -1;
   live.messages.forEach((m, i) => {
     if (m.senderModel === "Guest") lastOwn = i;
+    if (m.senderModel === "System" && /marked as resolved/i.test(m.content)) lastResolved = i;
   });
+  // The visitor has one conversation for good. When the team resolved it and they came back, what came before stays
+  // one tap away instead of greeting them with old files.
+  const earlierCount = lastResolved >= 0 && lastResolved < live.messages.length - 1 ? lastResolved + 1 : 0;
   const showSuggestions = phase === "idle" && !thinking && messages.length === 1 && messages[0].id.startsWith("welcome");
 
   return (
@@ -575,7 +646,16 @@ export default function ChatWidget() {
                   </div>
                 )}
 
+                {earlierCount > 0 && !showEarlier && (
+                  <div className="mb-1 flex justify-center">
+                    <button type="button" onClick={() => setShowEarlier(true)} className={`${press} rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-brand-violet ring-1 ring-brand-violet/20 hover:bg-tint-50`}>
+                      Show earlier messages ({earlierCount})
+                    </button>
+                  </div>
+                )}
+
                 {live.messages.map((msg, i) => {
+                  if (i < earlierCount && !showEarlier) return null;
                   const mine = msg.senderModel === "Guest";
                   const system = msg.senderModel === "System";
                   const prev = i > 0 ? live.messages[i - 1] : null;
@@ -587,6 +667,11 @@ export default function ChatWidget() {
                     prev.senderModel !== msg.senderModel ||
                     new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() > 60_000;
                   const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  const hasMedia = (msg.attachments?.length ?? 0) > 0;
+                  const mediaOnly = hasMedia && !msg.content;
+
+                  const ticketLink = system ? parseTicketLink(msg.content) : null;
+                  if (ticketLink) return <TicketLinkCard key={msg._id} url={ticketLink.url} ticketId={ticketLink.ticketId} />;
 
                   if (system)
                     return (
@@ -600,9 +685,9 @@ export default function ChatWidget() {
                       {!mine && (first ? <AgentAvatar name={msg.senderName} /> : <div className="w-8 shrink-0" aria-hidden />)}
                       <div className="max-w-[82%]">
                         {!mine && first && <p className="mb-1 ml-1 text-[11px] font-medium text-ink/55">{msg.senderName}</p>}
-                        <div className={`rounded-[1.25rem] px-4 py-2.5 text-sm leading-relaxed ${mine ? bubbleOut : `rounded-tl-md bg-white text-ink ${shadowCard}`}`}>
-                          {msg.content && <span className="break-words whitespace-pre-wrap">{msg.content}</span>}
-                          {msg.attachments?.map((url) => <Attachment key={url} url={url} token={live.token} />)}
+                        <div className={`rounded-[1.25rem] text-sm leading-relaxed ${mediaOnly ? "p-1" : "px-4 py-2.5"} ${mine ? bubbleOut : `rounded-tl-md bg-white text-ink ${shadowCard}`}`}>
+                          {msg.content && <span className={`block break-words whitespace-pre-wrap ${hasMedia ? "mb-2" : ""}`}>{msg.content}</span>}
+                          {hasMedia && <AttachmentGrid urls={msg.attachments ?? []} resolve={resolveLive} tone={mine ? "mine" : "theirs"} />}
                         </div>
                         <p className={`mt-1 text-[10px] text-ink/45 tabular-nums ${mine ? "mr-1 text-right" : "ml-1"}`}>
                           {time}
@@ -631,10 +716,11 @@ export default function ChatWidget() {
                 ) : (
                   <form onSubmit={sendLive}>
                     <input ref={fileRef} type="file" multiple accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,.docx,.xlsx,.txt" className="hidden" onChange={onFiles} />
-                    {live.uploadError && <p role="alert" className="mb-1.5 px-1 text-xs text-red-600">{live.uploadError}</p>}
+                    <StagedFiles items={staged} onRemove={removeStaged} />
+                    {fileError && <p role="alert" className="mb-1.5 px-1 text-xs text-red-600">{fileError}</p>}
                     <div className={composer}>
-                      <button type="button" onClick={() => fileRef.current?.click()} disabled={live.uploading} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
-                        {live.uploading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Paperclip className="h-4 w-4" aria-hidden />}
+                      <button type="button" onClick={() => fileRef.current?.click()} disabled={staged.length >= MAX_STAGED} aria-label="Attach a file" className={`${press} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 hover:bg-ink/5 hover:text-ink disabled:opacity-40`}>
+                        <Paperclip className="h-4 w-4" aria-hidden />
                       </button>
                       <textarea
                         ref={liveInputRef}
@@ -655,7 +741,7 @@ export default function ChatWidget() {
                         rows={1}
                         className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-1.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink/40"
                       />
-                      <button type="submit" disabled={!liveInput.trim()} aria-label="Send" className={sendButton}>
+                      <button type="submit" disabled={(!liveInput.trim() && !staged.some((f) => f.status === "done")) || staged.some((f) => f.status === "uploading")} aria-label="Send" className={sendButton}>
                         <Send className="h-4 w-4 -translate-x-px translate-y-px" aria-hidden />
                       </button>
                     </div>

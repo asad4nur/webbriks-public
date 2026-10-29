@@ -10,6 +10,57 @@ export function getFileName(url: string) {
   }
 }
 
+const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+
+/** The name the sender gave the file. New uploads keep it after the id ("<uuid>__Invoice.pdf"); older ones are just an id. */
+export function displayFileName(url: string): string {
+  const raw = getFileName(url);
+  const named = raw.match(new RegExp(`^${UUID}__(.+)$`, "i"));
+  if (named) return named[1];
+  if (new RegExp(`^${UUID}(\\.\\w+)?$`, "i").test(raw)) return fileKind(url).label;
+  return raw;
+}
+
+export interface FileKind {
+  label: string;
+  short: string;
+  /** Tailwind classes for the little type badge. */
+  badge: string;
+}
+
+/** The type badge for a file name ("Invoice.pdf") or a stored file address. */
+export function fileKindOfName(name: string): FileKind {
+  const ext = (name.split("?")[0].split(".").pop() ?? "").toLowerCase();
+  if (ext === "pdf") return { label: "PDF document", short: "PDF", badge: "bg-red-500 text-white" };
+  if (ext === "doc" || ext === "docx") return { label: "Word document", short: "DOC", badge: "bg-blue-500 text-white" };
+  if (ext === "xls" || ext === "xlsx") return { label: "Spreadsheet", short: "XLS", badge: "bg-emerald-600 text-white" };
+  if (ext === "txt") return { label: "Text file", short: "TXT", badge: "bg-slate-500 text-white" };
+  return { label: "File", short: ext && ext.length <= 4 ? ext.toUpperCase() : "FILE", badge: "bg-slate-500 text-white" };
+}
+
+export const fileKind = (url: string): FileKind => fileKindOfName(getFileName(url));
+
+const SIGNED_TTL = 10 * 60 * 1000; // the links last 15 minutes: reuse for 10, then ask again
+const signedCache = new Map<string, { url: string; at: number }>();
+const signedPending = new Map<string, Promise<string | null>>();
+
+/** A view link for a private file, remembered so a thumbnail, its lightbox and a re-render share one request. */
+export function signedViewUrl(key: string, load: (key: string) => Promise<string | null>): Promise<string | null> {
+  const hit = signedCache.get(key);
+  if (hit && Date.now() - hit.at < SIGNED_TTL) return Promise.resolve(hit.url);
+  const inflight = signedPending.get(key);
+  if (inflight) return inflight;
+  const request = load(key)
+    .then((url) => {
+      if (url) signedCache.set(key, { url, at: Date.now() });
+      return url;
+    })
+    .catch(() => null)
+    .finally(() => signedPending.delete(key));
+  signedPending.set(key, request);
+  return request;
+}
+
 // Attachments live in a private S3 bucket under these folders and need a presigned view URL.
 const S3_PREFIXES = [
   "chats/",
