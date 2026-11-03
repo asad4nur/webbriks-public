@@ -269,10 +269,7 @@ export const websiteGroups: PlanGroup[] = [
           "Custom integrations and dashboards",
         ],
         bestFor: "Anyone who needs less, or more, than our packages.",
-        note: {
-          BDT: "Can cost less than our packages too: a one-page landing page can start around ৳30,000.",
-          USD: "Can cost less than our packages too: a one-page landing page can start around $600.",
-        },
+        note: "Smaller jobs, like a one-page landing page, are quoted too.",
       },
     ],
   },
