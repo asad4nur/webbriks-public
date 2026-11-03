@@ -29,7 +29,7 @@ export default function ContactForm() {
       const price = plan.price[currency];
       messageRef.current.value =
         price === null
-          ? `I'd like a quote for the ${plan.name} package (${pick(plan.tagline, currency)})\n\n`
+          ? `I'd like a price for the ${plan.name} package (${pick(plan.tagline, currency)})\n\n`
           : `I'm interested in the ${plan.name} plan (${formatAmount(price, currency)}${plan.unit ? ` ${pick(plan.unit, currency)}` : ""}).\n\n`;
     }
   }, [currency]);

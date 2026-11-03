@@ -1,5 +1,8 @@
 // Packages and prices for /pricing and the homepage pricing section, from Webbriks' price-plan PDFs.
 //
+// Website packages show what's included but no price: visitors request a price for the features they need
+// (every website plan uses `custom`). Marketing and photo & video keep their published rates.
+//
 // Visitors in Bangladesh see BDT; everyone else sees USD (see proxy.ts and useCurrency).
 // BDT prices and features come straight from the PDFs. USD is for international clients: priced for
 // overseas buyers (roughly double the BDT price, Shopify kept competitive), with features swapped where the
@@ -11,7 +14,7 @@ export type Currency = "BDT" | "USD";
 /** Cookie set by proxy.ts with the visitor's pricing currency. */
 export const CURRENCY_COOKIE = "wb-currency";
 
-/** One amount, a [min, max] range, or null for "custom quote". */
+/** One amount, a [min, max] range, or null for "price on request". */
 export type Amount = number | [number, number] | null;
 
 /** A value, or one per currency when it differs (wording, features, prices inside sentences). */
@@ -76,7 +79,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "shopify-starter",
         name: "Shopify Starter",
         tagline: "Start selling online with a professional Shopify store.",
-        price: { BDT: 30000, USD: 500 },
+        price: custom,
         unit: "one-time",
         features: {
           BDT: [
@@ -112,7 +115,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "shopify-pro",
         name: "Shopify Business Pro",
         tagline: "A custom-designed Shopify store with smarter operations and marketing.",
-        price: { BDT: 60000, USD: 1200 },
+        price: custom,
         unit: "one-time",
         badge: "Most popular",
         featuresIntro: "Everything in Starter, plus:",
@@ -183,7 +186,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "nextjs-starter",
         name: "Starter",
         tagline: "A complete custom-coded store to start your e-commerce journey.",
-        price: { BDT: 60000, USD: 1500 },
+        price: custom,
         unit: "one-time",
         features: {
           BDT: [
@@ -220,7 +223,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "nextjs-pro",
         name: "Business Pro",
         tagline: "Everything you need to run, automate and grow your store.",
-        price: { BDT: 95000, USD: 2500 },
+        price: custom,
         unit: "one-time",
         badge: "Most popular",
         featuresIntro: "Everything in Starter, plus:",
@@ -284,7 +287,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "laravel-starter",
         name: "Laravel Starter",
         tagline: "A complete, budget-friendly store on one of our ready-made templates.",
-        price: { BDT: 30000, USD: 800 },
+        price: custom,
         unit: "one-time",
         features: {
           BDT: [
@@ -317,7 +320,7 @@ export const websiteGroups: PlanGroup[] = [
         id: "laravel-pro",
         name: "Laravel Business Pro",
         tagline: "A fully custom store with powerful business automation.",
-        price: { BDT: 60000, USD: 1500 },
+        price: custom,
         unit: "one-time",
         badge: "Best value",
         featuresIntro: "Everything in Starter, plus:",
@@ -640,7 +643,7 @@ export function planHref(plan: Plan) {
 }
 
 export function formatAmount(amount: Amount, currency: Currency) {
-  if (amount === null) return "Custom quote";
+  if (amount === null) return "Price on request";
   const one = (n: number) =>
     currency === "BDT"
       ? `৳${n.toLocaleString("en-IN")}`

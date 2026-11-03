@@ -12,7 +12,7 @@ import WebsitePlans from "./_sections/WebsitePlans";
 export const metadata: Metadata = {
   title: "Pricing | Webbriks",
   description:
-    "Clear prices for Shopify, Laravel and custom-coded online stores, monthly ad management, and product photos and videos.",
+    "Website packages for Shopify, Laravel and custom-coded online stores with price on request, plus monthly ad management and product photos and videos.",
 };
 
 // How support works, step by step. Contact details come from lib/site.
@@ -54,8 +54,8 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink/60 sm:text-lg">
-            One-time prices for websites, monthly plans for marketing, and simple rates for photos and videos. Pick a
-            plan, or tell us what you need and we&rsquo;ll quote it.
+            See what every website package includes and request a price for the features you need. Marketing runs
+            on monthly plans, and photos and videos have simple rates.
           </p>
           <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 text-sm text-ink/60 ring-1 ring-ink/[0.06]">
             <Globe2 className="h-4 w-4 text-brand-violet" aria-hidden />

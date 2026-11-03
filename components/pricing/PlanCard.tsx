@@ -81,7 +81,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             : "bg-ink text-white hover:bg-brand-violet"
         }`}
       >
-        {quote ? "Request a quote" : "Get started"}
+        {quote ? "Request a price" : "Get started"}
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
       </Link>
 
@@ -132,7 +132,14 @@ export default function PlanCard({ plan }: { plan: Plan }) {
 function PlanPrice({ plan, currency, featured }: { plan: Plan; currency: Currency; featured: boolean }) {
   const unit = pick(plan.unit, currency);
   if (plan.price[currency] === null) {
-    return <span className="text-3xl font-semibold tracking-tight sm:text-4xl">Custom quote</span>;
+    return (
+      <>
+        <span className="text-2xl font-semibold tracking-tight sm:text-3xl">Price on request</span>
+        <span className={`mt-1 w-full text-sm ${featured ? "text-white/55" : "text-ink/50"}`}>
+          Quoted on the features you need
+        </span>
+      </>
+    );
   }
   return (
     <>
