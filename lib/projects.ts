@@ -23,6 +23,15 @@ export const projects: Project[] = [
     image: "/projects/screens/lunelle.webp",
   },
   {
+    name: "REDCon Ltd.",
+    url: "https://redconbd.com/",
+    industry: "Engineering consultancy",
+    description:
+      "Site for an engineering consultancy, showcasing infrastructure, environmental and WASH projects across Bangladesh.",
+    tags: ["Corporate", "Consultancy", "Project showcase"],
+    image: "/projects/screens/redcon.webp",
+  },
+  {
     name: "MKS Abaya",
     url: "https://mksabaya.com/",
     industry: "Modest fashion",
@@ -39,6 +48,15 @@ export const projects: Project[] = [
       "Multi-category store for abayas, bags, authentic skincare and leather shoes, with a bold product slider and order tracking.",
     tags: ["Ecommerce", "Multi-category", "Order tracking"],
     image: "/projects/screens/lookive-dark.webp",
+  },
+  {
+    name: "Shako International",
+    url: "http://www.shako-int.com/",
+    industry: "Apparel sourcing",
+    description:
+      "Site for an apparel buying house, with its sourcing services, product ranges, sustainability work and news.",
+    tags: ["Corporate", "B2B", "Product catalogue"],
+    image: "/projects/screens/shako.webp",
   },
   {
     name: "Travelora",

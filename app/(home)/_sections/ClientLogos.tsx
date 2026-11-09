@@ -25,6 +25,7 @@ const clients: Client[] = [
   { name: "Pannas", logo: "/client-logos/pannas.png", invert: true, scale: 2.2 },
   { name: "Professor Lifestyle", logo: "/client-logos/professor-lifestyle.png" },
   { name: "REDCon Ltd.", logo: "/client-logos/red-con.png", invert: true },
+  { name: "Shako International", logo: "/client-logos/shako.png" },
   { name: "Travelora", logo: "/client-logos/travelora.png" },
   { name: "Trenzo", logo: "/client-logos/trenzo.svg", invert: true },
   { name: "TrueSense", logo: "/client-logos/truesense.png" },
