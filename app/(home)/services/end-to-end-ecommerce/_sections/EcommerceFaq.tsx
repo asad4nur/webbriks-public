@@ -1,3 +1,5 @@
+import JsonLd from "@/components/JsonLd";
+import { faqSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { Mail, Phone } from "lucide-react";
 import FaqAccordion from "../../../_sections/FaqAccordion";
@@ -45,6 +47,7 @@ export default function EcommerceFaq() {
       aria-labelledby="ecommerce-faq-heading"
       className="relative isolate bg-white py-16 text-ink sm:py-24 lg:py-32"
     >
+      <JsonLd data={faqSchema(faqs)} />
       <div className="mx-auto grid max-w-[1440px] gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20 lg:px-10">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <span className="inline-flex items-center gap-2 rounded-full bg-tint-100 px-3.5 py-1.5 text-xs font-medium tracking-wide text-brand-violet">

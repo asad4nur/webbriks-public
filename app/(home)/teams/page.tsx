@@ -5,8 +5,11 @@ import Link from "next/link";
 import { FaLinkedinIn } from "react-icons/fa6";
 import Contact from "../_sections/Contact";
 import CTA from "../_sections/CTA";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/teams"),
   title: "Meet the Team | Webbriks",
   description:
     "Meet the Webbriks family: the founders, designers, developers and marketers building websites, stores and ads that grow businesses.",
@@ -15,6 +18,7 @@ export const metadata: Metadata = {
 export default function TeamsPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Team", path: "/teams" }])} />
       {/* Hero */}
       <section
         aria-labelledby="teams-heading"

@@ -9,8 +9,11 @@ import AdReports from "./_sections/AdReports";
 import AdProcess from "./_sections/AdProcess";
 import AdServices from "./_sections/AdServices";
 import PerformanceHero from "./_sections/PerformanceHero";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/performance-marketing"),
   title: "Performance Marketing | Webbriks",
   description:
     "Meta, TikTok and Google ads that bring sales, not just likes. We plan, run and optimise your campaigns and track every sale.",
@@ -20,6 +23,7 @@ export const metadata: Metadata = {
 export default function PerformanceMarketingPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/performance-marketing", "Performance Marketing", metadata.description as string, "Worldwide")} />
       <PerformanceHero />
       <Marketing />
       <AdReports />

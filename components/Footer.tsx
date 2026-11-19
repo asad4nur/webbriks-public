@@ -33,13 +33,25 @@ function MastercardLogo({ className }: { className?: string }) {
   );
 }
 
+// Real page links (not #anchors), so they work from every page and pass link value to each page.
 const company = [
-  { label: "Our Work", href: "#work" },
-  { label: "How We Work", href: "#process" },
-  { label: "About Us", href: "#about" },
-  { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Trenzo Case Study", href: "/case-study/trenzo" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "About Us", href: "/about" },
+  { label: "Our Team", href: "/teams" },
+  { label: "Careers", href: "/careers" },
+  { label: "Contact", href: "/contact" },
 ];
+
+const servicePages: Record<(typeof site.services)[number], string> = {
+  "End-to-End Ecommerce": "/services/end-to-end-ecommerce",
+  "Web Design & Development": "/services/web-design-development",
+  "Performance Marketing": "/services/performance-marketing",
+  "AI Creatives": "/services/ai-creatives",
+  "Product Photography & Video": "/services/product-photography-video",
+  "Photo Editing & Retouching": "/services/photo-editing-retouching",
+};
 
 // The year is read inside a cached function (refreshed daily), as Cache Components requires.
 async function CurrentYear() {
@@ -62,7 +74,7 @@ export default function Footer() {
         <div className="grid gap-12 lg:grid-cols-[1.3fr_0.8fr_0.8fr_1fr_1.3fr] lg:gap-10">
           {/* Brand */}
           <div className="max-w-sm">
-            <Link href="#home" aria-label="Webbriks home">
+            <Link href="/" aria-label="Webbriks home">
               <Image src="/logo/wb-logo-dark.png" alt="Webbriks" width={150} height={36} className="h-9 w-auto" />
             </Link>
             <p className="mt-5 text-sm leading-relaxed text-ink/60">
@@ -92,7 +104,7 @@ export default function Footer() {
           <FooterColumn title="Services">
             {site.services.map((service) => (
               <li key={service}>
-                <Link href="#services" className="text-ink/60 transition-colors hover:text-brand-violet">
+                <Link href={servicePages[service]} className="text-ink/60 transition-colors hover:text-brand-violet">
                   {service}
                 </Link>
               </li>

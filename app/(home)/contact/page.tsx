@@ -7,8 +7,11 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
 import Contact from "../_sections/Contact";
 import Faq from "../_sections/Faq";
 import OfficeMap from "./_sections/OfficeMap";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/contact"),
   title: "Contact Us | Webbriks",
   description:
     "Talk to Webbriks about your website, online store or ads. Email, call or visit our offices in Dhaka, Gaibandha and the USA.",
@@ -55,6 +58,7 @@ const routes = [
 export default function ContactPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Contact", path: "/contact" }])} />
       {/* Hero */}
       <section
         aria-labelledby="contact-page-heading"

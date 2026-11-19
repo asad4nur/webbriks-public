@@ -7,8 +7,11 @@ import RetouchHero from "./_sections/RetouchHero";
 import RetouchProcess from "./_sections/RetouchProcess";
 import RetouchServices from "./_sections/RetouchServices";
 import SisterConcern from "./_sections/SisterConcern";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/photo-editing-retouching"),
   title: "Photo Editing & Retouching Worldwide | Webbriks",
   description:
     "Background removal, clipping path, colour correction and product photo retouching for brands worldwide, with our sister concern Cutout Expert.",
@@ -18,6 +21,7 @@ export const metadata: Metadata = {
 export default function PhotoEditingRetouchingPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/photo-editing-retouching", "Photo Editing & Retouching", metadata.description as string, "Worldwide")} />
       <RetouchHero />
       <RetouchServices />
       <SisterConcern />

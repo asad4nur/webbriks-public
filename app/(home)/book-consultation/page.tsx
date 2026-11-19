@@ -4,8 +4,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Faq from "../_sections/Faq";
 import BookingForm from "./_sections/BookingForm";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/book-consultation"),
   title: "Book a Free Consultation | Webbriks",
   description:
     "Pick a day and time for a free call with Webbriks about your website, online store, ads, photos or automation. No obligation.",
@@ -21,6 +24,7 @@ const promises = [
 export default function BookConsultationPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Book a Free Consultation", path: "/book-consultation" }])} />
       <section
         aria-labelledby="book-heading"
         className="relative isolate overflow-hidden bg-paper pt-28 pb-16 text-ink lg:pt-32 lg:pb-24"

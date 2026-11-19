@@ -40,7 +40,7 @@ export default function ReportGallery({ reports }: { reports: Report[] }) {
                 <span className="relative block">
                   <Image
                     src={report.image}
-                    alt=""
+                    alt={report.title}
                     width={report.width}
                     height={report.height}
                     sizes="(min-width:1280px) 30vw, (min-width:768px) 45vw, 100vw"

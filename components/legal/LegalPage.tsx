@@ -48,6 +48,8 @@ import Link from "next/link";
 
 import { type LegalDoc, type LegalIcon, legalDocs } from "@/lib/legal";
 import { site } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema } from "@/lib/seo";
 
 const icons: Record<LegalIcon, LucideIcon> = {
   layers: Layers,
@@ -100,6 +102,7 @@ export default function LegalPage({ doc }: { doc: LegalDoc }) {
 
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: doc.label, path: `/${doc.slug}` }])} />
       <section className="relative isolate overflow-hidden bg-white pt-32 pb-12 text-ink sm:pt-36 sm:pb-16">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-40 left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-tint-100/80 blur-[130px]" />

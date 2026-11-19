@@ -21,11 +21,14 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import ApplyButton from "./_sections/ApplyButton";
 import ApplyForm from "./_sections/ApplyForm";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/careers"),
   title: "We're Hiring | Careers at Webbriks",
   description:
-    "Now hiring in Dhaka: Sales & Marketing Executive, Photographer, Cinematographer & Video Editor, and Video Editor & Motion Graphic Designer. Full-time, on-site. Apply online.",
+    "Now hiring in Dhaka: Sales & Marketing Executive, Photographer, Cinematographer & Video Editor, and Video Editor & Motion Graphic Designer. Apply online.",
 };
 
 // "Why join" points from webbriks.com/careers.
@@ -67,6 +70,7 @@ const steps = ["Apply online", "We review your CV & portfolio", "Interview", "We
 export default function CareersPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Careers", path: "/careers" }])} />
       {/* Hero */}
       <section
         aria-labelledby="careers-heading"

@@ -8,8 +8,11 @@ import Contact from "../_sections/Contact";
 import CTA from "../_sections/CTA";
 import ServicePlans from "./_sections/ServicePlans";
 import WebsitePlans from "./_sections/WebsitePlans";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/pricing"),
   title: "Pricing | Webbriks",
   description:
     "Website packages for Shopify, Laravel and custom-coded online stores with price on request, plus monthly ad management and product photos and videos.",
@@ -38,6 +41,7 @@ const supportSteps = [
 export default function PricingPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Pricing", path: "/pricing" }])} />
       <section className="relative isolate overflow-hidden bg-white pt-32 pb-12 text-ink sm:pt-36 sm:pb-16">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-40 left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-tint-100/80 blur-[130px]" />

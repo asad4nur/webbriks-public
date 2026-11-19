@@ -162,7 +162,7 @@ function StoreScene() {
               {products.map(({ name, price, image }) => (
                 <div key={name}>
                   <div className="relative aspect-square overflow-hidden rounded-lg bg-tint-50">
-                    <Image src={image} alt="" fill sizes="120px" className="object-cover" />
+                    <Image src={image} alt={name} fill sizes="120px" className="object-cover" />
                     <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/90 text-ink/50">
                       <Heart className="h-2.5 w-2.5" />
                     </span>

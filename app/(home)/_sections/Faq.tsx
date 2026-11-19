@@ -1,3 +1,5 @@
+import JsonLd from "@/components/JsonLd";
+import { faqSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { Mail, Phone } from "lucide-react";
 import FaqAccordion from "./FaqAccordion";
@@ -50,6 +52,7 @@ const faqs = [
 export default function Faq() {
   return (
     <section id="faq" aria-labelledby="faq-heading" className="relative isolate bg-white py-16 text-ink sm:py-24 lg:py-32">
+      <JsonLd data={faqSchema(faqs)} />
       <div className="mx-auto grid max-w-[1440px] gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20 lg:px-10">
         {/* Left: sticky intro + help card */}
         <div className="lg:sticky lg:top-32 lg:self-start">

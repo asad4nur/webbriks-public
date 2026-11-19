@@ -7,8 +7,11 @@ import AboutCulture from "./_sections/AboutCulture";
 import AboutHero from "./_sections/AboutHero";
 import AboutOffices from "./_sections/AboutOffices";
 import AboutValues from "./_sections/AboutValues";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/about"),
   title: "About Us | Webbriks",
   description:
     "Webbriks is a web design and digital marketing agency with offices in Dhaka, Gaibandha and the USA, helping businesses grow online for over 10 years.",
@@ -19,6 +22,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "About", path: "/about" }])} />
       <AboutHero />
       <AboutValues />
       <FounderMessage />

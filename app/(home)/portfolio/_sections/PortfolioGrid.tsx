@@ -194,7 +194,7 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             <span className="relative block aspect-[4/3]">
               <Image
                 src={item.image}
-                alt=""
+                alt={`${item.title} website`}
                 fill
                 sizes={sizes}
                 className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
@@ -208,7 +208,7 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
             <BrowserBar label="Ads Manager" meta />
             <Image
               src={item.image}
-              alt=""
+              alt={`Ads Manager report: ${item.title}`}
               width={item.width}
               height={item.height}
               sizes={sizes}
@@ -225,7 +225,7 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
           >
             <Image
               src={item.image}
-              alt=""
+              alt={item.title}
               fill
               sizes={sizes}
               className="object-cover transition duration-700 group-hover:scale-[1.04]"
@@ -237,7 +237,7 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
           <span className="relative block aspect-[4/5] bg-ink">
             <Image
               src={item.image}
-              alt=""
+              alt={`${item.title}, AI creative`}
               fill
               unoptimized={item.animated}
               sizes={sizes}
@@ -266,7 +266,7 @@ function Media({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
           <span className={`relative block bg-ink ${item.shape === "portrait" ? "aspect-[4/5]" : "aspect-video"}`}>
             <Image
               src={item.image}
-              alt=""
+              alt={`${item.title} video`}
               fill
               sizes={sizes}
               className="object-cover opacity-90 transition duration-700 group-hover:scale-[1.04]"

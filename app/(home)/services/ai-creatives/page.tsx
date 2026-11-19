@@ -8,8 +8,11 @@ import AiFaq from "./_sections/AiFaq";
 import AiProcess from "./_sections/AiProcess";
 import AiProjects from "./_sections/AiProjects";
 import AiServices from "./_sections/AiServices";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/ai-creatives"),
   title: "AI Creatives | Webbriks",
   description:
     "AI ad visuals, product scenes and variations made from your own product photos, in every size for Meta, TikTok, Google and your website.",
@@ -19,6 +22,7 @@ export const metadata: Metadata = {
 export default function AiCreativesPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/ai-creatives", "AI Creatives", metadata.description as string, "Worldwide")} />
       <AiCreativesHero />
       <AiServices />
       <Creatives />

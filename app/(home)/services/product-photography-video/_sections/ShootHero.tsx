@@ -134,7 +134,7 @@ function ShootScene() {
         {/* Viewfinder */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-white">
           {/* A white-background studio shot, shown whole */}
-          <Image src={hero} alt="" fill sizes="(min-width:1024px) 40vw, 90vw" className="object-contain" priority />
+          <Image src={hero} alt="Trenzo card wallet, studio shot on a white background" fill sizes="(min-width:1024px) 40vw, 90vw" className="object-contain" priority />
           <div aria-hidden className="pointer-events-none absolute inset-4 sm:inset-6">
             <span className="absolute top-0 left-0 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-white" />
             <span className="absolute top-0 right-0 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-white" />

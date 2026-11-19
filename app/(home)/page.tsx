@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+import JsonLd from "@/components/JsonLd";
+import { brikventSchema, seo } from "@/lib/seo";
 import About from "./_sections/About";
 import ClientLogos from "./_sections/ClientLogos";
 import Contact from "./_sections/Contact";
@@ -17,9 +21,12 @@ import TechStack from "./_sections/TechStack";
 import Testimonials from "./_sections/Testimonials";
 import WhyChooseUs from "./_sections/WhyChooseUs";
 
+export const metadata: Metadata = { ...seo("/") };
+
 export default function Home() {
   return (
     <main className="flex-1">
+      <JsonLd data={brikventSchema} />
       <Hero />
       <ClientLogos />
       <Services />

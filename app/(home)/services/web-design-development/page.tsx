@@ -8,8 +8,11 @@ import RelatedServices from "../_sections/RelatedServices";
 import WebFaq from "./_sections/WebFaq";
 import WebHero from "./_sections/WebHero";
 import WebServices from "./_sections/WebServices";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/web-design-development"),
   title: "Web Design & Development | Webbriks",
   description:
     "Custom websites and web apps, designed from scratch and built to load fast on every device. Design first, then code.",
@@ -20,6 +23,7 @@ export const metadata: Metadata = {
 export default function WebDesignDevelopmentPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/web-design-development", "Web Design & Development", metadata.description as string, "Worldwide")} />
       <WebHero />
       <Projects />
       <WebServices />

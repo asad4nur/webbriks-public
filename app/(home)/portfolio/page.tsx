@@ -4,8 +4,11 @@ import Contact from "../_sections/Contact";
 import CTA from "../_sections/CTA";
 import PortfolioGrid from "./_sections/PortfolioGrid";
 import { categories, portfolio } from "./data";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/portfolio"),
   title: "Portfolio | Webbriks",
   description:
     "Websites, online stores, ad results, product photography, retouching, AI creatives and video by Webbriks, all in one place.",
@@ -17,6 +20,7 @@ export default function PortfolioPage() {
 
   return (
     <main className="flex-1">
+      <JsonLd data={breadcrumbSchema([{ name: "Portfolio", path: "/portfolio" }])} />
       <section
         aria-labelledby="portfolio-heading"
         className="relative isolate bg-paper pt-28 pb-16 text-ink lg:pt-32 lg:pb-24"

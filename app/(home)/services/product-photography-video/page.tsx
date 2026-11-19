@@ -7,8 +7,11 @@ import ShootFaq from "./_sections/ShootFaq";
 import ShootHero from "./_sections/ShootHero";
 import ShootProcess from "./_sections/ShootProcess";
 import ShootServices from "./_sections/ShootServices";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/product-photography-video"),
   title: "Product Photography & Video in Bangladesh | Webbriks",
   description:
     "Studio and on-location product photography and video in Bangladesh, edited and ready for your store, ads and social media.",
@@ -18,6 +21,7 @@ export const metadata: Metadata = {
 export default function ProductPhotographyVideoPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/product-photography-video", "Product Photography & Video", metadata.description as string, "Bangladesh")} />
       <ShootHero />
       <ShootServices />
       <Creatives />

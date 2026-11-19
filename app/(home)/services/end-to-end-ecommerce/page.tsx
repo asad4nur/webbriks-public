@@ -9,8 +9,11 @@ import Projects from "../../_sections/Projects";
 import RelatedServices from "../_sections/RelatedServices";
 import EcommerceFaq from "./_sections/EcommerceFaq";
 import EcommerceHero from "./_sections/EcommerceHero";
+import JsonLd from "@/components/JsonLd";
+import { seo, serviceSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  ...seo("/services/end-to-end-ecommerce"),
   title: "End-to-End Ecommerce | Webbriks",
   description:
     "Your complete online store, handled for you: store setup, products, payments, courier delivery and the ads that bring buyers, all with one team.",
@@ -21,6 +24,7 @@ export const metadata: Metadata = {
 export default function EndToEndEcommercePage() {
   return (
     <main className="flex-1">
+      <JsonLd data={serviceSchema("/services/end-to-end-ecommerce", "End-to-End Ecommerce", metadata.description as string, "Worldwide")} />
       <EcommerceHero />
       <Ecommerce />
       <OurWorkingProcess />
