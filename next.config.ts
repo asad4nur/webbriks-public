@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
       ["/services/digital-marketing", "/services/performance-marketing"],
       ["/services/photography", "/services/product-photography-video"],
       ["/case-study", "/case-study/trenzo"],
+      // From the old site, seen as 404s in Search Console (Nov 2026)
+      ["/sla", "/service-level-agreement"],
+      ["/services/software-development", "/services/web-design-development"],
+      ["/careers/:slug([^/.]+)", "/careers"], // closed job posts (not files like the opengraph image)
+      ["/track-ticket", "/contact"],
+      ["/sign-in", "/"],
     ];
     return moved.map(([source, destination]) => ({ source, destination, statusCode: 301 as const }));
   },

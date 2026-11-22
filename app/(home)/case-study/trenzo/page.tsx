@@ -12,7 +12,7 @@ import JsonLd from "@/components/JsonLd";
 import { articleSchema, breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  ...seo("/case-study/trenzo"),
+  ...seo("/case-study/trenzo", { ownImage: true }),
   title: `${caseStudy.client} Case Study | Webbriks`,
   // Search snippet; caseStudy.summary is longer than the ~160 characters results show.
   description: "How Webbriks rebuilt Trenzo's online store and fixed its Meta ads tracking: cost per purchase fell from ৳297 to ৳176.",

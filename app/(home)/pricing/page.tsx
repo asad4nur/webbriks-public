@@ -12,7 +12,7 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  ...seo("/pricing"),
+  ...seo("/pricing", { ownImage: true }),
   title: "Pricing | Webbriks",
   description:
     "Website packages for Shopify, Laravel and custom-coded online stores with price on request, plus monthly ad management and product photos and videos.",

@@ -13,13 +13,26 @@ export const INDEXNOW_KEY = "b1c15b3952878689f5132a6d6a6cd604";
 const abs = (path: string) => (path.startsWith("http") ? path : `${SITE_URL}${path === "/" ? "" : path}`);
 
 /**
+ * The link-preview picture (app/opengraph-image.jpg). A page's own `openGraph` replaces the layout's, including the
+ * image the root file adds, so every page names it again here. Pages whose folder has its own opengraph-image file
+ * (careers, pricing, portfolio, case study) pass `ownImage`, or this image would replace theirs.
+ */
+const DEFAULT_SHARE_IMAGE = {
+  url: "/opengraph-image.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
+  alt: "Webbriks: websites, online stores and ads that grow your business",
+};
+
+/**
  * Canonical URL and og:url for a page; spread into its `metadata`. og:title / og:description are left out on
  * purpose (see app/layout.tsx): link previews fall back to the page's own <title> and description.
  */
-export const seo = (path: string): Pick<Metadata, "alternates" | "openGraph"> => ({
+export const seo = (path: string, { ownImage = false } = {}): Pick<Metadata, "alternates" | "openGraph"> => ({
   // English only for now; add `bn` here when a Bangla version of the page exists.
   alternates: { canonical: path, languages: { en: path, "x-default": path } },
-  openGraph: { type: "website", siteName: site.name, locale: "en_US", url: path },
+  openGraph: { type: "website", siteName: site.name, locale: "en_US", url: path, ...(ownImage ? {} : { images: [DEFAULT_SHARE_IMAGE] }) },
 });
 
 const ORG_ID = `${SITE_URL}/#organization`;

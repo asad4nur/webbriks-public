@@ -25,7 +25,7 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  ...seo("/careers"),
+  ...seo("/careers", { ownImage: true }),
   title: "We're Hiring | Careers at Webbriks",
   description:
     "Now hiring in Dhaka: Sales & Marketing Executive, Photographer, Cinematographer & Video Editor, and Video Editor & Motion Graphic Designer. Apply online.",

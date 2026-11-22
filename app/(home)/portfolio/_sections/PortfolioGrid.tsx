@@ -8,23 +8,18 @@ import { FaMeta } from "react-icons/fa6";
 import BeforeAfter from "../../_sections/BeforeAfter";
 import { categories, type CategoryId, portfolio, type PortfolioItem, serviceFor } from "../data";
 
-type Filter = "all" | CategoryId;
-
 const domain = (url?: string) => url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 export default function PortfolioGrid() {
-  const [filter, setFilter] = useState<Filter>("all");
+  // One category at a time (no "All" view, which mixed every kind of work together). Only tabs with work show;
+  // the first, Websites & Stores, is open on arrival.
+  const tabs = categories
+    .map(({ id, label }) => ({ id, label, count: portfolio.filter((item) => item.category === id).length }))
+    .filter((tab) => tab.count > 0);
+  const [filter, setFilter] = useState<CategoryId>(tabs[0].id);
   const [open, setOpen] = useState<PortfolioItem | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-
-  // Only show tabs that have something in them.
-  const tabs = [
-    { id: "all" as const, label: "All work", count: portfolio.length },
-    ...categories
-      .map(({ id, label }) => ({ id, label, count: portfolio.filter((item) => item.category === id).length }))
-      .filter((tab) => tab.count > 0),
-  ];
-  const items = filter === "all" ? portfolio : portfolio.filter((item) => item.category === filter);
+  const items = portfolio.filter((item) => item.category === filter);
 
   useEffect(() => {
     const d = dialog.current;

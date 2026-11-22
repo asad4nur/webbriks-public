@@ -8,7 +8,7 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema, seo } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  ...seo("/portfolio"),
+  ...seo("/portfolio", { ownImage: true }),
   title: "Portfolio | Webbriks",
   description:
     "Websites, online stores, ad results, product photography, retouching, AI creatives and video by Webbriks, all in one place.",
