@@ -62,15 +62,18 @@ export default function PortfolioGrid() {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid: website cards are all one size, so they fill row by row and the strongest (listed first) lead the
+          top row; photos, reports and other mixed shapes stay in masonry columns. */}
       <ul
         id="portfolio-grid"
         role="tabpanel"
         key={filter}
-        className="mt-8 animate-fade-up columns-1 gap-5 [animation-duration:0.5s] sm:columns-2 lg:columns-3 motion-reduce:animate-none"
+        className={`mt-8 animate-fade-up [animation-duration:0.5s] motion-reduce:animate-none ${
+          filter === "websites" ? "grid gap-5 sm:grid-cols-2 lg:grid-cols-3" : "columns-1 gap-5 sm:columns-2 lg:columns-3"
+        }`}
       >
         {items.map((item) => (
-          <li key={item.id} className="mb-5 break-inside-avoid">
+          <li key={item.id} className={filter === "websites" ? "" : "mb-5 break-inside-avoid"}>
             <Card item={item} onOpen={() => setOpen(item)} />
           </li>
         ))}
